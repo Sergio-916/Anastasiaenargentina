@@ -1,95 +1,102 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+
+import {
+  Box,
+  Button,
+  Container,
+  Flex,
+  Image,
+  Text,
+  Link,
+  Divider,
+  theme
+} from "@chakra-ui/react";
+import { useBreakpointValue } from "@chakra-ui/react";
+import NextLink from "next/link";
+import MySwiperComponent from "./components/Carousel";
+
 
 export default function Home() {
+  const nastyaPhoto = "/nastya.jpg";
+
+  const variant = useBreakpointValue({
+    base: "column-reverse",
+    md: "row",
+    gl: "row",
+    xl: "row",
+  });
+  const variantW = useBreakpointValue({
+    base: "100%",
+    md: "50%",
+    gl: "50%",
+    xl: "50%",
+  });
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <>
+      <Container maxW="container.xl">
+        <Flex
+          gap="30px"
+          mt="10px"
+          justifyContent="space-around"
+          flexDirection={variant}
+          align={{ base: "center", md: null }}
+        >
+          <Box w={variantW}>
+            <Box
+              mt="30px"
+              textAlign="center"
+              display="flex"
+              alignItems="center"
+              flexDirection="column"
+                          >
+              <Image mt={{md: '20px'}} src={nastyaPhoto} alt="Anastasia_Shimuk" w="360px" borderRadius="xl" />
+              <Text lineHeight="taller" as="i" fontSize={["xl", "xl", "2xl"]}>
+                “ Делюсь любовью к неидеальной Аргентине “
+              </Text>
+            </Box>
+          </Box>
+          <Box
+            boxShadow="xl"
+            borderRadius="xl"
+            textColor="gray.600"
+            textAlign="center"
+            bg="gray.50"
+            w={{ base: "400px", md: "50%" }}
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="space-around"
+            minH={"600px"}
+            pt={{ md: 10 }}
+            pl={{ base: 25 }}
+            pr={{ base: 25 }}
           >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+            <Text fontSize={["2xl", "3xl", "4xl", "5xl"]} lineHeight="shorter">
+              Анастасия Шимук - гид по Агрентине
+            </Text>
+            <Text as="b" fontSize={["lg", "xl", "xl", "2xl"]}>
+              Экскурсии по Буэнос Айресу, история города и выдающихся людей,
+              эксклюзивные и увлекательные поездки по Аргентине
+            </Text>
+            <Link as={NextLink} href="/tours">
+              <Button colorScheme="teal" size="lg">
+                Экскурсии
+              </Button>
+            </Link>
+          </Box>
+        </Flex>
+      </Container>
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+      <Container maxW="container.xl">
+        <Divider />
+        <Text fontSize={["3xl", "4xl", "5xl"]} textAlign="center" mt={20} mb={-10}>
+          Отзывы
+        </Text>
+        <Flex justify="center">
+          <MySwiperComponent />
+        </Flex>
+      </Container>
+    </>
   );
 }

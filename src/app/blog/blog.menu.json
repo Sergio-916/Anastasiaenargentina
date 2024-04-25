@@ -1,0 +1,24 @@
+{
+    "blogs": [
+      {
+        "title": "Барилоче",
+        "link": "/bariloche"
+      },
+      {
+        "title": "Игуасу за 1 день",
+        "link": "/iguazu-for-one-day"
+      },
+      {
+        "title": "Мар Дель Плата",
+        "link": "/mar-del-plata"
+      },
+      {
+        "title": "Рестораны Ретиро",
+        "link": "/retiro-restaurants"
+      },
+      {
+        "title": "Top Roof Bars Буэнос Айреса",
+        "link": "/top-roof-bars-buenos-aires"
+      }
+    ]
+  }
