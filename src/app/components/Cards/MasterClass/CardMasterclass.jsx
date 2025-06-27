@@ -9,6 +9,7 @@ import {
   CardBody,
   LinkBox,
   LinkOverlay,
+  Link,
 } from "@chakra-ui/react";
 import mastermenu from "./card.master.menu.json";
 
@@ -27,8 +28,9 @@ function CardMasterclass() {
               <Image
                 borderRadius={5}
                 src={item.photo}
-                height={['150px','200px',"200px"]}
+                height={["150px", "200px", "200px"]}
                 width="auto"
+                alt={item.nav}
               />
               <Box>
                 <LinkOverlay

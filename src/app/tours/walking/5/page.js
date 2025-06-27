@@ -24,9 +24,9 @@ import {
   
   function Walking5() {
     const photos = [
-      "/walking/5/1.jpg",
-      "/walking/5/2.jpg",
-      "/walking/5/3.jpg",
+      "/walking_photos/5/1.jpg",
+      "/walking_photos/5/2.jpg",
+      "/walking_photos/5/3.jpg",
      
     ];
   
@@ -76,7 +76,7 @@ import {
               </Stack>
             </CardBody>
             <CardFooter display="flex" justify="space-between">
-              <Link href="/tours/walking/">
+              <Link href="/tours/walking">
                 <Button colorScheme="teal" size={["sm", null, "md", "lg"]}>
                   &lt; Назад
                 </Button>

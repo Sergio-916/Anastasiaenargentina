@@ -20,7 +20,7 @@ export const metadata = {
 };
 
 function Tango() {
-  const photo = "/master/tango/tango3.jpg";
+  const photo = "/master_photos/tango/tango3.jpg";
   return (
     <>
       {" "}
@@ -95,7 +95,7 @@ function Tango() {
         </TableContainer> */}
         <Divider />
         
-        <Link href="/tours/masterclass/">
+        <Link href="/tours/masterclass">
           <Button
             m={3}
             my={7}

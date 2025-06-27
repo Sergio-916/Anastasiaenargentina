@@ -81,7 +81,7 @@ function Auto3() {
         <Divider />
 
         <Flex justify="space-between" my={[5, null,8,8]}>
-          <Link target="_blank" href="/tours/auto/">
+          <Link target="_blank" href="/tours/auto">
             <Button m={3} colorScheme="teal" size={["sm", null, "md", "lg"]}>
               &lt; Назад
             </Button>

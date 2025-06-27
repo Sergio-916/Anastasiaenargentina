@@ -34,12 +34,12 @@ function ContactForm() {
       )
       .then(
         (result) => {
-          console.log(result.text);
+          // console.log(result.text);
           form.current.reset(); /// reset form
           setMessage(true);
         },
         (error) => {
-          console.log(error.text);
+          // console.log(error.text);
         }
       );
   };

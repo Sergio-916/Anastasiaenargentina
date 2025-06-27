@@ -8,9 +8,9 @@ import { FaInstagram, FaFacebook, FaWhatsapp, FaYoutube } from "react-icons/fa";
 function Footer() {
   return (
     <>
-      <Box w="100%" bgColor="blackAlpha.800" h="auto" color="whiteAlpha.900" >
+      <Box w="100%" bgColor="blackAlpha.800" h="auto" color="whiteAlpha.900">
         <Container maxW="container.xl" py="15px">
-          <Flex justify="space-between" gap="10px" >
+          <Flex justify="space-between" gap="10px">
             <Box
               display="flex"
               w="50%"
@@ -85,6 +85,9 @@ function Footer() {
               </Stack>
             </Flex>
           </Flex>
+          <Box textAlign="right" mt="10px">
+            <Text fontSize="xs">Created by @ Sergey Shpak</Text>
+          </Box>
         </Container>
       </Box>
     </>

@@ -9,12 +9,12 @@ import {
   Text,
   Link,
   Divider,
-  theme
+  theme,
+  Heading
 } from "@chakra-ui/react";
 import { useBreakpointValue } from "@chakra-ui/react";
 import NextLink from "next/link";
 import MySwiperComponent from "./components/Carousel";
-
 
 export default function Home() {
   const nastyaPhoto = "/nastya.jpg";
@@ -34,6 +34,7 @@ export default function Home() {
 
   return (
     <>
+      
       <Container maxW="container.xl">
         <Flex
           gap="30px"
@@ -49,8 +50,14 @@ export default function Home() {
               display="flex"
               alignItems="center"
               flexDirection="column"
-                          >
-              <Image mt={{md: '20px'}} src={nastyaPhoto} alt="Anastasia_Shimuk" w="360px" borderRadius="xl" />
+            >
+              <Image
+                mt={{ md: "20px" }}
+                src={nastyaPhoto}
+                alt="Anastasia_Shimuk"
+                w="360px"
+                borderRadius="xl"
+              />
               <Text lineHeight="taller" as="i" fontSize={["xl", "xl", "2xl"]}>
                 “ Делюсь любовью к неидеальной Аргентине “
               </Text>
@@ -72,9 +79,9 @@ export default function Home() {
             pl={{ base: 25 }}
             pr={{ base: 25 }}
           >
-            <Text fontSize={["2xl", "3xl", "4xl", "5xl"]} lineHeight="shorter">
-              Анастасия Шимук - гид по Агрентине
-            </Text>
+            <Heading fontSize={["2xl", "3xl", "4xl", "5xl"]} lineHeight="shorter">
+              Анастасия Шимук - гид по Аргентине
+            </Heading>
             <Text as="b" fontSize={["lg", "xl", "xl", "2xl"]}>
               Экскурсии по Буэнос Айресу, история города и выдающихся людей,
               эксклюзивные и увлекательные поездки по Аргентине
@@ -90,7 +97,12 @@ export default function Home() {
 
       <Container maxW="container.xl">
         <Divider />
-        <Text fontSize={["3xl", "4xl", "5xl"]} textAlign="center" mt={20} mb={-10}>
+        <Text
+          fontSize={["3xl", "4xl", "5xl"]}
+          textAlign="center"
+          mt={20}
+          mb={-10}
+        >
           Отзывы
         </Text>
         <Flex justify="center">

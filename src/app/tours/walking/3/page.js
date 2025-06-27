@@ -12,7 +12,7 @@ import {
   Button,
   Divider,
   Link,
-  Box
+  Box,
 } from "@chakra-ui/react";
 import PhotoCarousel from "@/app/components/PhotoCarousel";
 import walkingData from "./walking3.json";
@@ -23,7 +23,11 @@ export const metadata = {
 };
 
 function Walking3() {
-  const photos = ["/walking/3/1.jpg", "/walking/3/2.jpg", "/walking/3/3.jpg"];
+  const photos = [
+    "/walking_photos/3/1.jpg",
+    "/walking_photos/3/2.jpg",
+    "/walking_photos/3/3.jpg",
+  ];
 
   return (
     <>
@@ -55,7 +59,7 @@ function Walking3() {
                     ))}
                   </UnorderedList>
                 </Box>
-             
+
                 <Box>
                   <Text fontSize={["16px", "18px", "20px"]}>Что увидим:</Text>
                   <UnorderedList>
@@ -70,7 +74,7 @@ function Walking3() {
             </Stack>
           </CardBody>
           <CardFooter display="flex" justify="space-between">
-            <Link href="/tours/walking/">
+            <Link href="/tours/walking">
               <Button colorScheme="teal" size={["sm", null, "md", "lg"]}>
                 &lt; Назад
               </Button>

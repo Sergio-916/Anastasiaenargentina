@@ -10,7 +10,7 @@ import {
   Link,
   Button,
 } from "@chakra-ui/react";
-import Tangoshow from "@/app/components/Tango/Tango.options";
+
 import autoData from "./auto1.json";
 
 
@@ -42,7 +42,7 @@ function Auto1() {
  
 
         <Flex justify="space-between" my={[5, null,8,8]}>
-          <Link href="/tours/auto/">
+          <Link href="/tours/auto">
             <Button m={3} colorScheme="teal" size={["sm", null, "md", "lg"]}>
               &lt; Назад
             </Button>

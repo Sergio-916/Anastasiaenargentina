@@ -21,8 +21,8 @@ function CardMenu() {
   const icons = [
     [<FaShoePrints size={50} />, <FaShoePrints size={50} />],
     [<FaCarSide size={50} />, <RiShip2Fill size={50} />],
-    [<GiPaintBrush size={50} />, <Image boxSize={'55px'} src="/master/tango-show/performance.png"/>], 
-    [<FaPlane size={50} />, <Image boxSize={'55px'}  src="/trip/mountain.png"/>],
+    [<GiPaintBrush size={50} />, <Image boxSize={'55px'} src="/master_photos/tango-show/performance.png"/>], 
+    [<FaPlane size={50} />, <Image boxSize={'55px'}  src="/trip_photos/mountain.png"/>],
   ];
 
 

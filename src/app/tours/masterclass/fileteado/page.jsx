@@ -19,9 +19,9 @@ export const metadata = {
 import PhotoCarousel from "@/app/components/PhotoCarousel";
 function Fileteado() {
   const photos = [
-    "/master/felitiado/fileteado4.jpg",
-    "/master/felitiado/fileteado5.jpg",
-    "/master/felitiado/fileteado6.jpg",
+    "/master_photos/felitiado/fileteado4.jpg",
+    "/master_photos/felitiado/fileteado5.jpg",
+    "/master_photos/felitiado/fileteado6.jpg",
   ];
 
   return (
@@ -48,7 +48,7 @@ function Fileteado() {
             </Link>
           </ListItem>
         </List>
-        <Link href="/tours/masterclass/">
+        <Link href="/tours/masterclass">
             <Button ml={3} mb={'20px'} colorScheme="teal" size={["sm", null, "md", "lg"]}>
               &lt; Назад
             </Button>

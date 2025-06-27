@@ -12,15 +12,15 @@ import aboutInfo from "./about.info.json";
 
 function SwipeAbout() {
   const photos = [
-    "/about/about1.jpg",
-    "/about/about2.jpg",
-    "/about/about3.jpg",
-    "/about/about4.jpg",
-    "/about/about5.jpg",
-    "/about/about6.jpg",
-    "/about/about7.jpg",
-    "/about/about8.jpg",
-    "/about/about9.jpg",
+    "/about_photos/about1.jpg",
+    "/about_photos/about2.jpg",
+    "/about_photos/about3.jpg",
+    "/about_photos/about4.jpg",
+    "/about_photos/about5.jpg",
+    "/about_photos/about6.jpg",
+    "/about_photos/about7.jpg",
+    "/about_photos/about8.jpg",
+    "/about_photos/about9.jpg",
   ];
   return (
     <Swiper
@@ -29,13 +29,16 @@ function SwipeAbout() {
       slidesPerView={1}
       navigation
       pagination={{ clickable: true }}
-      scrollbar={{ draggable: true }}
-      onSwiper={(swiper) => console.log(swiper)}
-      onSlideChange={() => console.log("slide change")}
+      scrollbar={false}
+      // onSwiper={(swiper) => console.log(swiper)}
+      // onSlideChange={() => console.log("slide change")}
     >
       {aboutInfo.info.map((item, index) => (
-        <SwiperSlide key={index} style={{ display: 'flex', justifyContent: 'center'}}>
-          <AboutCard item={item} img={photos[index]} />
+        <SwiperSlide
+          key={index}
+          style={{ display: "flex", justifyContent: "center" }}
+        >
+          <AboutCard item={item} img={photos[index]} index={index} />
         </SwiperSlide>
       ))}
     </Swiper>
@@ -52,7 +55,7 @@ function About() {
       <Heading my={5} textAlign="center">
         Обо мне
       </Heading>
-      <Flex align={"center"} justify={"center"} zIndex={-1}>
+      <Flex align={"center"} justify={"center"} zIndex={-1}mb={10}>
         <SwipeAbout />
       </Flex>
     </>

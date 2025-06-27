@@ -25,11 +25,14 @@ export const metadata = {
 };
 
 function Estancia() {
-  const photoPanorama = "/master/estancia/estancia1.jpg";
+  const photoPanorama = "/master_photos/estancia/estancia1.jpg";
   const photos = [
-    "/master/estancia/estancia-band.jpg",
-    "/master/estancia/estancia-horse.jpg",
-    "/master/estancia/estancia-horse2.jpg.png",
+    "/master_photos/estancia/estancia-band.jpg",
+    "/master_photos/estancia/estancia-horse.jpg",
+    "/master_photos/estancia/estancia-horse2.png",
+    "/master_photos/estancia/Old-man.jpg",
+    "/master_photos/estancia/kids.jpg",
+    "/master_photos/estancia/horces.jpg",
   ];
 
   return (
@@ -70,7 +73,7 @@ function Estancia() {
             customSlidePreview={1}
           />
         </Box>
-        <Link href="/tours/masterclass/">
+        <Link href="/tours/masterclass">
           <Button
             m={3}
             mb={10}

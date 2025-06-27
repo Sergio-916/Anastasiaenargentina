@@ -17,7 +17,7 @@ function AboutCard({ item, img, index }) {
         boxShadow={"lg"}
         bgColor={"teal.400"}
         p={"20px"}
-        mb={"20px"}
+        mb={"50px"}
         position="relative"
         borderRadius={"10px"}
       >
@@ -35,14 +35,15 @@ function AboutCard({ item, img, index }) {
           width={["350px", "350px", "400px", "450px"]}
         >
           <Text
+            display="flex"
+            alignItems="center"
             textAlign={"center"}
-            verticalAlign={"center"}
+            justifyContent="center"
             fontWeight={"bold"}
-            borderRadius={"30px"}
-            h={["150px", "150px", "220px", "220px"]}
+            borderRadius={"20px"}
+            height={index === 7 ? ["100","120px"] : ["150px", "150px", "170px", "170x"]}
             bgColor={"gray.50"}
-            pt={["15px", "20px", "30px", "35px"]}
-            fontSize={["xs","sm","md", "lg", "lg",]}
+            fontSize={["xs", "sm", "md", "lg", "lg"]}
           >
             {item}
           </Text>

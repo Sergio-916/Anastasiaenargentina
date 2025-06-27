@@ -4,7 +4,8 @@ import CardMenu from "../components/Cards/Card.menu";
 
 export const metadata = {
   title: "Варианты экскурсий",
-  description: "Пешеходные экскурсии по Буэнос Айресу, автомобильные экскурсии, поездки по Аргентине",
+  description:
+    "Пешеходные экскурсии по Буэнос Айресу, автомобильные экскурсии, поездки по Аргентине",
 };
 
 function Tours() {

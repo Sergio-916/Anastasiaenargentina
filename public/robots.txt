@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://anastasiashimuk.com
+
+# Sitemaps
+Sitemap: https://anastasiashimuk.com/sitemap.xml

@@ -20,11 +20,12 @@ export const metadata = {
 
 function Auto2() {
   const photos = [
-    "/auto/north1.jpg",
-    "/auto/north2.jpg",
-    "/auto/north3.jpg",
-    "/auto/north4.jpg",
-    "/auto/north5.jpg",
+    "/auto_photos/north1.jpg",
+    "/auto_photos/north2.jpg",
+    "/auto_photos/north3.jpg",
+    "/auto_photos/north4.jpg",
+    "/auto_photos/lunch.jpg",
+    "/auto_photos/north5.jpg",
   ];
   return (
     <>
@@ -44,7 +45,7 @@ function Auto2() {
         <Divider />
 
         <Flex justify="space-between" my={[5, null,8,8]} >
-          <Link href="/tours/auto/">
+          <Link href="/tours/auto">
             <Button m={3} colorScheme="teal" size={["sm", null, "md", "lg"]}>
               &lt; Назад
             </Button>

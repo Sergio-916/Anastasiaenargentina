@@ -7,43 +7,28 @@ import {
   UnorderedList,
   Container,
   Text,
-  Link
+  Link,
 } from "@chakra-ui/react";
-import blogs from "./blog.menu.json";
-
-import Logo2 from '../../../public/trip/bariloche.jpg';
-
-// export const metadata = {
-//   title: "Блог",
-//   description: "Анастасия Шимук - гид по Аргентине, гид по Буэнос Айресу",
-// };
+import blogs from "../../../public/blog.menu.json";
+import Layout from "./layout";
+import getPostMetadata from "@/utils/getPostMetadata";
+import SearchView from "../components/SearchView";
+export const metadata = {
+  title: "Блог Анастасии Шимук",
+  description: "Анастасия Шимук - гид по Аргентине, гид по Буэнос Айресу",
+};
 
 function Blog() {
+  const postMetadata = getPostMetadata("public/content");
+  // console.log(postMetadata);
   return (
     <>
-      <Container maxW='container.xl'>
-        <Heading m={10} textAlign="center">
-          Блог Анастасии Шимук
-        </Heading>
+      <Text m={5} fontSize={["md", "lg", "xl"]} textAlign="center" display={["none","block","block"]}>
+        В блоге я делюсь своим опытом жизни в Буэнос Айресе и инетерсными
+        поездками, где я расскажываю много полезной информации для путешествий
+      </Text>
 
-        <Image src={Logo2} alt="Bariloche" /> 
-
-        <Text mb={20} fontSize="xl" textAlign="center">
-          В блоге я делюсь своим опытом жизни в Буэнос Айресе и
-          инетерсными поездками, где я расскажываю много полезной информации для
-          путешествий
-        </Text>
-        <UnorderedList fontSize="xl">
-          {blogs.blogs.map((blog, index) => (
-            <Link key={index} href={`blog${blog.link}`}>
-              <ListItem key={index}>{blog.title}</ListItem>
-            </Link>
-          ))}
-        </UnorderedList>
-
-
-
-      </Container>
+      <SearchView postMetadata={postMetadata} />
     </>
   );
 }

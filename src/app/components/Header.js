@@ -18,11 +18,11 @@ import { RxHamburgerMenu } from "react-icons/rx";
 export const menuItems = [
   "Главная",
   "Экскурсии",
-  
+  "Блог",
   "Обо мне",
   "Контакты",
 ];
-export const menuRoures = ["/", "/tours",  "/about", "/contacts"];
+export const menuRoures = ["/", "/tours","/blog", "/about", "/contacts"];
 function Header() {
   const logo = "/logo.svg";
 
@@ -64,9 +64,9 @@ function Header() {
           <Menu>
             <MenuButton
               as={IconButton}
-              icon={<RxHamburgerMenu size={25} />}
+              icon={<RxHamburgerMenu size={25} color="white" />}
               variant="outline"
-              color="teal.900"
+              color="teal.900"       
             />
             <MenuList zIndex={1000}>
               {menuItems.map((item, index) => (

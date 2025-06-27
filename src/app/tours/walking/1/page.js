@@ -23,7 +23,11 @@ export const metadata = {
   description: "Самая важная площадь Аргентины",
 };
 function Walking1() {
-  const photos = ["/walking/1/1.jpg", "/walking/1/2.jpg", "/walking/1/3.jpg"];
+  const photos = [
+    "/walking_photos/1/1.jpg",
+    "/walking_photos/1/2.jpg",
+    "/walking_photos/1/3.jpg",
+  ];
   return (
     <>
       <Container maxW="container.xl">
@@ -64,7 +68,7 @@ function Walking1() {
                     ))}
                   </UnorderedList>
                 </Box>
-             
+
                 <Box>
                   <Text fontSize={["16px", "18px", "20px"]}>Что увидим:</Text>
                   <UnorderedList>
@@ -79,7 +83,7 @@ function Walking1() {
             </Stack>
           </CardBody>
           <CardFooter display="flex" justify="space-between">
-            <Link href="/tours/walking/">
+            <Link href="/tours/walking">
               <Button colorScheme="teal" size={["sm", null, "md", "lg"]}>
                 &lt; Назад
               </Button>

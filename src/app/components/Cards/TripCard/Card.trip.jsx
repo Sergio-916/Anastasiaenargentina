@@ -21,7 +21,7 @@ function TripCard() {
           overflow="hidden"
           variant="outline"
         >
-          <Image m={5} borderRadius={10}  src={item.photo} maxW={250} maxH={332} />
+          <Image m={5} borderRadius={10}  src={item.photo} maxW={250} maxH={332} alt={item.name} />
           <Box>
             <CardHeader>
               <Heading size={["md", "lg"]}>{item.name}</Heading>

@@ -4,25 +4,25 @@
         "name": "Мастер – класс по Филетеадо",
         "description": "Мастер класс по Fileteado c мате или вином. ",
         "nav": "fileteado",
-        "photo":"/master/felitiado/fileteado2.png"
+        "photo":"/master_photos/felitiado/fileteado2.png"
       },
       {
         "name": "Незабываемый день на традиционной эстанции",
         "description": "Вы проведете целый день на ферме, знакомясь с обычаями и дегустируя настоящее аргентинское осадо.",
         "nav": "estancia",
-        "photo":"/master/estancia/estancia3.jpg"
+        "photo":"/master_photos/estancia/estancia3.jpg"
       },
       {
         "name": "Танго-класс в  историческом зале в центре города",
         "description": "Мастер класс танго от чемпионов России по аргентинскому танго",
         "nav": "tango-lesson",
-        "photo":"/master/tango/tango1.jpg"
+        "photo":"/master_photos/tango/tango1.jpg"
       },
       {
         "name": "Лучшие Танго-шоу Буэнос Айреса",
         "description": "Незабываемые эмоции и лучший досуг в вечернем городе ",
         "nav": "tango-show",
-        "photo":"/master/tango-show/tango-show1.jpg"
+        "photo":"/master_photos/tango-show/tango-show1.jpg"
       }
     ]
   }

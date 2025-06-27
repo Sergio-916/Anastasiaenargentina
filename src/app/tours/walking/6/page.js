@@ -24,10 +24,10 @@ export const metadata = {
 
 function Walking6() {
   const photos = [
-    "/walking/6/1.jpg",
-    "/walking/6/2.jpg",
-    "/walking/6/3.jpg",
-    "/walking/6/4.jpg"
+    "/walking_photos/6/1.jpg",
+    "/walking_photos/6/2.jpg",
+    "/walking_photos/6/3.jpg",
+    "/walking_photos/6/4.jpg"
   ];
 
   return (
@@ -75,7 +75,7 @@ function Walking6() {
             </Stack>
           </CardBody>
           <CardFooter display="flex" justify="space-between">
-            <Link href="/tours/walking/">
+            <Link href="/tours/walking">
               <Button colorScheme="teal" size={["sm", null, "md", "lg"]}>
                 &lt; Назад
               </Button>
