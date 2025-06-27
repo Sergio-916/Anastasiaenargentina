@@ -1,9 +1,8 @@
-# *
 User-agent: *
 Allow: /
+Disallow: /out/
+Disallow: /admin/
+Disallow: /private/
 
-# Host
-Host: https://anastasiashimuk.com
-
-# Sitemaps
 Sitemap: https://anastasiashimuk.com/sitemap.xml
+Host: https://anastasiashimuk.com

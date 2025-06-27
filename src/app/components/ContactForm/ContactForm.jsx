@@ -17,6 +17,7 @@ function ContactForm() {
   const form = useRef();
 
   const [message, setMessage] = useState(false);
+  const [error, setError] = useState(null);
   const [input, setInput] = useState("");
   const [input2, setInput2] = useState("");
   const [input3, setInput3] = useState("");
@@ -24,6 +25,8 @@ function ContactForm() {
 
   const sendEmail = (e) => {
     e.preventDefault();
+    setMessage(false);
+    setError(null);
 
     emailjs
       .sendForm(
@@ -40,6 +43,9 @@ function ContactForm() {
         },
         (error) => {
           // console.log(error.text);
+          setError(
+            "Сервис временно недоступен. Пожалуйста, попробуйте еще раз."
+          );
         }
       );
   };
@@ -50,10 +56,12 @@ function ContactForm() {
   const handleInputChangePhone = (e) => setInputPhone(e.target.value);
 
   useEffect(() => {
-    setInput("");
-    setInput2("");
-    setInput3('');
-    setInputPhone('');
+    if (message) {
+      setInput("");
+      setInput2("");
+      setInput3("");
+      setInputPhone("");
+    }
   }, [message]);
 
   return (
@@ -106,7 +114,8 @@ function ContactForm() {
           </Button>
         </form>
         <Divider mb={3} />
-        {message && <Text>Сообщение отправлено!</Text>}
+        {message && <Text color="green.500">Сообщение отправлено!</Text>}
+        {error && <Text color="red.500">{error}</Text>}
       </Box>
     </>
   );
