@@ -19,6 +19,9 @@ import {
   ModalBody,
   ModalCloseButton,
   useDisclosure,
+  List,
+  ListItem,
+  Link,
 } from "@chakra-ui/react";
 import emailjs from "@emailjs/browser";
 
@@ -71,29 +74,43 @@ function WebinarForm({ isOpen, onClose }) {
       <ModalContent>
         <ModalHeader>Купить вебинар</ModalHeader>
         <ModalBody>
-          <ul>Реквизиты для оплаты:</ul>
-          <li>
-            Bybit UID: <code>100997754</code> - <b>30usdt</b>
-          </li>
-          <li>
-            TRC20: <code>TYzQ53KPxA8FLyVB5gggnZwVqtzGHgvcGD</code> -{" "}
-            <b>30usdt</b>
-          </li>
-          <li>
-            Перевод на рублевую карту Альфа-банк по тел.{" "}
-            <code>8(917)5581857</code> - <b>2400руб</b>
-          </li>
-          <li>
-            Alias MercadoPago: <code>shimuk.anastasia</code> - <b>36000песо</b>
-          </li>
+          <Text>Реквизиты для оплаты:</Text>
+          <List>
+            <ListItem>
+              Bybit UID: <code>100997754</code> - <b>50usdt</b>
+            </ListItem>
+            <ListItem>
+              TRC20: <code>TYzQ53KPxA8FLyVB5gggnZwVqtzGHgvcGD</code> -{" "}
+              <b>50usdt</b>
+            </ListItem>
+            <ListItem>
+              Перевод на рублевую карту Альфа-банк по тел.{" "}
+              <code>8(917)5581857</code> - <b>4000руб</b>
+            </ListItem>
+            <ListItem>
+              Alias MercadoPago: <code>shimuk.anastasia</code> -{" "}
+              <b>60000песо</b>
+            </ListItem>
+          </List>
           <br></br>
           После оплаты вы получите доступ в закрытую группу Телерам, где будут
           все материалы, а также бонусом, вы станете частью сообшества и сможете
           задать свои вопросы или поделться своими историями
         </ModalBody>
+        <ModalBody mb={3}>
+          <Text>Пришлите скриншот платежа любым удобным способом:</Text>
+          <List>
+            <ListItem>WhatsApp: +541127587985</ListItem>
+            <ListItem>
+              Telegram: <Link href="https://t.me/Sergio_916">@Sergio_916</Link>
+            </ListItem>
+            <ListItem>email: sergey.shpak79@gmail.com</ListItem>
+          </List>
+        </ModalBody>
         <ModalCloseButton />
         <ModalBody>
-          {success ? (
+          <Text>*Не забудьте указать свой ник в Telegram</Text>
+          {/* {success ? (
             <Text color="green.500">
               Спасибо за покупку! После проверки платежа мы с вами свяжемся.
             </Text>
@@ -111,12 +128,7 @@ function WebinarForm({ isOpen, onClose }) {
                 <FormLabel>Ник в Телеграм</FormLabel>
                 <Input type="text" name="telegram-nick" placeholder="" />
               </FormControl>
-              <FormControl mb={2} mt={4}>
-                <FormLabel>
-                  Пришлите скриншот платежа любым способом: тел, телеграм,
-                  директ в telegram
-                </FormLabel>
-              </FormControl>
+
               <Button
                 type="submit"
                 colorScheme="teal"
@@ -131,7 +143,7 @@ function WebinarForm({ isOpen, onClose }) {
                 </Text>
               )}
             </form>
-          )}
+          )} */}
         </ModalBody>
       </ModalContent>
     </Modal>
@@ -150,9 +162,8 @@ export default function BuyWebinarPage() {
         Выбираете школу для ребенка в Буэнос-Айресе? Не теряйтесь в догадках!
         <br />
         <br />
-        Мой 1.5-часовой вебинар — это ваш исчерпывающий гид по школам столицы.
-        Всего за $30 вы получите полную картину:
-        <br />
+        1.5-часовой вебинар — это ваш гид по школам Буэнос-Айреса. Всего за $50
+        вы получите полную картину:
         <br />
         - Все виды школ: от католических до технических.
         <br />
@@ -163,11 +174,13 @@ export default function BuyWebinarPage() {
         - Полный разбор стоимости, разницы между платными и бесплатными и всех
         нюансов выбора.
         <br />
+        - Процесс поступления в секундарию.
+        <br />
         <br />
         Примите осознанное решение для будущего вашего ребенка.
       </Text>
       <Text fontSize="lg" mb={6} textAlign="center">
-        <strong>Стоимость: $30</strong>
+        <strong>Стоимость: $50</strong>
       </Text>
       <Box textAlign="center">
         <Button colorScheme="teal" size="lg" onClick={onOpen}>
