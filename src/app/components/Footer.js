@@ -26,7 +26,7 @@ function Footer() {
                 <Text fontSize={["sm", "md", "xl"]} mb={2}>
                   anastasiaenargentina@gmail.com
                 </Text>
-                <Text fontSize="small"> Copyright © 2024 Анастасия Шимук</Text>
+                <Text fontSize="small"> Copyright © 2025 Анастасия Шимук</Text>
               </Box>
             </Box>
 
