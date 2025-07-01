@@ -18,15 +18,21 @@ function Footer() {
               justifyContent="space-between"
             >
               <Box>
-                <Text mb="30px" fontSize={["xl", "xl", "2xl"]}>
+                <Text mb="30px" fontSize={["lg", "lg", "xl"]}>
                   Анастасия Шимук - гид по Аргентине
                 </Text>
               </Box>
               <Box>
-                <Text fontSize={["sm", "md", "xl"]} mb={2}>
+                <Text
+                  fontSize={["sm", "md", "xl"]}
+                  mb={2}
+                  wordBreak="break-word"
+                  overflowWrap="break-word"
+                  whiteSpace="normal"
+                >
                   anastasiaenargentina@gmail.com
                 </Text>
-                <Text fontSize="small"> Copyright © 2024 Анастасия Шимук</Text>
+                <Text fontSize="small"> Copyright © 2025 Анастасия Шимук</Text>
               </Box>
             </Box>
 
@@ -37,7 +43,7 @@ function Footer() {
               align={{ base: "start", md: "end" }}
             >
               <Flex
-                gap="20px"
+                gap={["12px", "12px", "20px", "20px"]}
                 justify={{ base: "start", md: "end" }}
                 direction={["column", null, "row", "row"]}
               >
@@ -51,7 +57,7 @@ function Footer() {
               <Stack
                 direction={["column", null, "row", "row"]}
                 justify={["end"]}
-                gap="20px"
+                gap={["12px", "12px", "20px", "20px"]}
                 align={["center", "center", null, null]}
               >
                 <Link
@@ -59,28 +65,48 @@ function Footer() {
                   href="https://www.instagram.com/anastasiaenargentina/"
                   target="blank"
                 >
-                  <FaInstagram color="white" size={40} />
+                  <Box
+                    color="white"
+                    fontSize={["30px", "30px", "40px", "40px"]}
+                  >
+                    <FaInstagram />
+                  </Box>
                 </Link>
                 <Link
                   as={NextLink}
                   href="https://www.facebook.com/anastasia.shimuk"
                   target="blank"
                 >
-                  <FaFacebook size={40} />
+                  <Box
+                    color="white"
+                    fontSize={["30px", "30px", "40px", "40px"]}
+                  >
+                    <FaFacebook />
+                  </Box>
                 </Link>
                 <Link
                   as={NextLink}
                   href="https://www.youtube.com/@AnastasiaEnArgentina"
                   target="blank"
                 >
-                  <FaYoutube size={40} />
+                  <Box
+                    color="white"
+                    fontSize={["30px", "30px", "40px", "40px"]}
+                  >
+                    <FaYoutube />
+                  </Box>
                 </Link>
                 <Link
                   as={NextLink}
                   href="https://api.whatsapp.com/send/?phone=541127588458&text=%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82%21+%D0%9C%D0%B5%D0%BD%D1%8F+%D0%B8%D0%BD%D1%82%D0%B5%D1%80%D0%B5%D1%81%D1%83%D0%B5%D1%82+%D1%8D%D0%BA%D1%81%D0%BA%D1%83%D1%80%D1%81%D0%B8%D1%8F&type=phone_number&app_absent=0"
                   target="blank"
                 >
-                  <FaWhatsapp color="white" size={40} />
+                  <Box
+                    color="white"
+                    fontSize={["30px", "30px", "40px", "40px"]}
+                  >
+                    <FaWhatsapp />
+                  </Box>
                 </Link>
               </Stack>
             </Flex>

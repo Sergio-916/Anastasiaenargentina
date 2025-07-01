@@ -22,14 +22,14 @@ function Blog() {
   const postMetadata = getPostMetadata("public/content");
   // console.log(postMetadata);
   return (
-    <>
-      <Text m={5} fontSize={["md", "lg", "xl"]} textAlign="center" display={["none","block","block"]}>
+    <Container maxW="container.xl" minH="70vh">
+      <Text m={5} fontSize={["md", "lg", "xl"]} textAlign="center">
         В блоге я делюсь своим опытом жизни в Буэнос Айресе и инетерсными
         поездками, где я расскажываю много полезной информации для путешествий
       </Text>
 
       <SearchView postMetadata={postMetadata} />
-    </>
+    </Container>
   );
 }
 

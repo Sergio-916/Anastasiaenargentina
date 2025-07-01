@@ -10,7 +10,7 @@ import {
   Link,
   Divider,
   theme,
-  Heading
+  Heading,
 } from "@chakra-ui/react";
 import { useBreakpointValue } from "@chakra-ui/react";
 import NextLink from "next/link";
@@ -34,7 +34,6 @@ export default function Home() {
 
   return (
     <>
-      
       <Container maxW="container.xl">
         <Flex
           gap="30px"
@@ -58,7 +57,7 @@ export default function Home() {
                 w="360px"
                 borderRadius="xl"
               />
-              <Text lineHeight="taller" as="i" fontSize={["xl", "xl", "2xl"]}>
+              <Text lineHeight="taller" as="i" fontSize={["lg", "lg", "xl"]}>
                 “ Делюсь любовью к неидеальной Аргентине “
               </Text>
             </Box>
@@ -79,7 +78,10 @@ export default function Home() {
             pl={{ base: 25 }}
             pr={{ base: 25 }}
           >
-            <Heading fontSize={["2xl", "3xl", "4xl", "5xl"]} lineHeight="shorter">
+            <Heading
+              fontSize={["2xl", "3xl", "4xl", "5xl"]}
+              lineHeight="shorter"
+            >
               Анастасия Шимук - гид по Аргентине
             </Heading>
             <Text as="b" fontSize={["lg", "xl", "xl", "2xl"]}>
@@ -97,10 +99,25 @@ export default function Home() {
 
       <Container maxW="container.xl">
         <Divider />
+        <Box mt={[4, 6, 12]} textAlign="center" fontSize={["md", "lg", "xl"]}>
+          {" "}
+          <Link
+            href="/group-tours"
+            style={{
+              color: "#004D40",
+              fontStyle: "bold",
+              textDecoration: "underline",
+            }}
+          >
+            {" "}
+            Расписание групповых экскурсий на Июль
+          </Link>
+        </Box>
+
         <Text
-          fontSize={["3xl", "4xl", "5xl"]}
+          fontSize={["xl", "2xl", "3xl"]}
           textAlign="center"
-          mt={20}
+          mt={10}
           mb={-10}
         >
           Отзывы
