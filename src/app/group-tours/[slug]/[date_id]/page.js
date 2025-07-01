@@ -17,15 +17,20 @@ export const metadata = {
 };
 
 export async function generateStaticParams() {
-  const tours = await query({ query: "SELECT slug FROM tours" });
-  return tours.map((tour) => ({
+  const scheduledTours = await query({
+    query: `SELECT t.slug, td.id AS date_id
+            FROM tours AS t
+            INNER JOIN tour_date AS td ON t.id = td.tour_id`,
+  });
+  return scheduledTours.map((tour) => ({
     slug: tour.slug,
+    date_id: String(tour.date_id),
   }));
 }
 
-export default async function TourPage({ params, searchParams }) {
-  const { slug } = params;
-  const date_id = searchParams?.date_id;
+export default async function TourPage({ params }) {
+  const { slug, date_id } = params;
+  // const date_id = searchParams?.date_id;
   const [tour] = await query({
     query: `SELECT * FROM tours 
     INNER JOIN
@@ -54,7 +59,7 @@ export default async function TourPage({ params, searchParams }) {
   };
 
   return (
-    <Container maxW="container.lg" mt={4}>
+    <Container maxW="container.lg" mt={4} minH={["none", "none", "75vh"]}>
       <Box>
         <SimpleGrid columns={[1, null, 2]} spacing={4}>
           <VStack align="start">

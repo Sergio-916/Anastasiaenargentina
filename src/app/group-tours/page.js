@@ -49,7 +49,7 @@ export default async function GroupToursPage() {
       <List>
         {scheduledTours.map((tour) => (
           <ListItem key={tour.date_id}>
-            <Link href={`/group-tours/${tour.slug}?date_id=${tour.date_id}`}>
+            <Link href={`/group-tours/${tour.slug}/${tour.date_id}`}>
               📅{formatDate(tour.raw_date)}, {tour.time} - {tour.name}
             </Link>
           </ListItem>
