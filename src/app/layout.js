@@ -5,6 +5,7 @@ import Footer from "./components/Footer";
 import Auto from "./tours/auto/page";
 import Head from "next/head";
 import { Box } from "@chakra-ui/react";
+import Script from "next/script";
 //import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -85,6 +86,18 @@ export default function RootLayout({ children }) {
           }}
         />
       </Head>
+      <Script
+        src="https://www.googletagmanager.com/gtag/js?id=G-WRVS96THPS"
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-WRVS96THPS');
+        `}
+      </Script>
       <body className={inter.className}>
         <Providers>
           <Header />
