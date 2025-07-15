@@ -101,16 +101,15 @@ export default function Home() {
         <Divider />
         <Box mt={[4, 6, 12]} textAlign="center" fontSize={["md", "lg", "xl"]}>
           {" "}
-          <Link
-            href="/group-tours"
-            style={{
-              color: "#004D40",
-              fontStyle: "bold",
-              textDecoration: "underline",
-            }}
-          >
-            {" "}
-            Расписание групповых экскурсий на Июль
+          <Link as={NextLink} href="/group-tours">
+            <Button
+              colorScheme="teal"
+              size="lg"
+              width={{ base: "100%", md: "auto" }}
+              fontSize={{ base: "md", md: "lg" }}
+            >
+              Расписание групповых экскурсий
+            </Button>
           </Link>
         </Box>
 
