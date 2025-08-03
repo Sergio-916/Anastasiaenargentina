@@ -41,13 +41,19 @@ export default async function GroupToursPage() {
     });
   };
 
+  const currectMonth = new Date().getMonth() + 1;
+
+  const finteredTours = scheduledTours.filter((tour) => {
+    return new Date(tour.raw_date).getMonth() + 1 === currectMonth;
+  });
+
   return (
     <Container maxW="container.lg" minH={["none", "none", "75vh"]}>
       <Heading size="lg" m={4}>
-        Расписание экскурсий на Июль
+        Расписание экскурсий на Август
       </Heading>
       <List>
-        {scheduledTours.map((tour) => (
+        {finteredTours.map((tour) => (
           <ListItem key={tour.date_id}>
             <Link href={`/group-tours/${tour.slug}/${tour.date_id}`}>
               📅{formatDate(tour.raw_date)}, {tour.time} - {tour.name}

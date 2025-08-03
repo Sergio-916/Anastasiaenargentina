@@ -2,13 +2,13 @@ const Ftp = require("ftp");
 const path = require("path");
 const fs = require("fs");
 
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
 const config = {
-    host: process.env.FTP_HOST,
-    user: process.env.FTP_USER,
-    password: process.env.FTP_PASSWORD,
-    remoteRoot: '/public_html' // Adjust if your remote directory is different
+  host: process.env.FTP_HOST,
+  user: process.env.FTP_USER,
+  password: process.env.FTP_PASSWORD,
+  remoteRoot: "/",
 };
 
 const localRoot = path.join(__dirname, "..", "out");
@@ -19,6 +19,7 @@ const ftp = new Ftp();
 ftp.on("ready", () => {
   console.log("FTP connection ready.");
   uploadDirectory(localRoot, config.remoteRoot);
+  console.log("FTP upload complete.");
 });
 
 ftp.on("error", (err) => {

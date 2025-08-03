@@ -11,10 +11,28 @@ import {
 } from "@chakra-ui/react";
 import { query } from "@/utils/db";
 
-export const metadata = {
-  title: "Групповые экскурсии",
-  description: "Групповые экскурсии по Буэнос Айресу",
-};
+export async function generateMetadata({ params }) {
+  const { slug, date_id } = params;
+  const [tour] = await query({
+    query: `SELECT name, description FROM tours 
+    INNER JOIN
+     tour_date ON tours.id = tour_date.tour_id
+    WHERE tours.slug = ? AND tour_date.id = ?`,
+    values: [slug, date_id],
+  });
+
+  if (!tour) {
+    return {
+      title: "Тур не найден",
+      description: "Запрошенный тур не существует.",
+    };
+  }
+
+  return {
+    title: tour.name,
+    description: tour.description,
+  };
+}
 
 export async function generateStaticParams() {
   const scheduledTours = await query({

@@ -42,7 +42,7 @@ function Auto1() {
  
 
         <Flex justify="space-between" my={[5, null,8,8]}>
-          <Link href="/tours/auto">
+          <Link href={{ pathname: "/tours/auto"}}>
             <Button m={3} colorScheme="teal" size={["sm", null, "md", "lg"]}>
               &lt; Назад
             </Button>

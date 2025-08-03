@@ -1,0 +1,28 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # ПРАВИЛО №1: Главный фикс для папок со слэшем в конце.
+  # Если запрос пришел на реальную папку (например, /tours/walking/)
+  # и для нее есть одноименный html-файл (/tours/walking.html),
+  # то сервер "тихо" подменяет запрос на этот файл. Цикла не будет.
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+  RewriteRule ^(.*)/$ /$1.html [L]
+
+  # ПРАВИЛО №2: Убираем слэш в конце для всех остальных URL (которые не папки).
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.+)/$ /$1 [R=301,L]
+
+  # ПРАВИЛО №3: Стандартная подмена для "чистых" URL без слэша.
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME}.html -f
+  RewriteRule ^(.+)$ $1.html [L]
+
+  # ПРАВИЛО №4: Крайняя мера, если ничего не найдено.
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+
+</IfModule>
