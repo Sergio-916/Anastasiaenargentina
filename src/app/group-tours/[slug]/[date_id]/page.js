@@ -35,15 +35,25 @@ export async function generateMetadata({ params }) {
 }
 
 export async function generateStaticParams() {
-  const scheduledTours = await query({
-    query: `SELECT t.slug, td.id AS date_id
-            FROM tours AS t
-            INNER JOIN tour_date AS td ON t.id = td.tour_id`,
-  });
-  return scheduledTours.map((tour) => ({
-    slug: tour.slug,
-    date_id: String(tour.date_id),
-  }));
+  // Используем одно соединение для всех запросов
+  try {
+    console.log("Generating static params for group tours...");
+    const scheduledTours = await query({
+      query: `SELECT t.slug, td.id AS date_id
+              FROM tours AS t
+              INNER JOIN tour_date AS td ON t.id = td.tour_id`,
+    });
+    
+    console.log(`Found ${scheduledTours.length} tour dates for static generation`);
+    
+    return scheduledTours.map((tour) => ({
+      slug: tour.slug,
+      date_id: String(tour.date_id),
+    }));
+  } catch (error) {
+    console.error("Error generating static params:", error);
+    return []; // Возвращаем пустой массив в случае ошибки
+  }
 }
 
 export default async function TourPage({ params }) {

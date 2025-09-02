@@ -93,15 +93,7 @@ export default function Home() {
                 Экскурсии
               </Button>
             </Link>
-          </Box>
-        </Flex>
-      </Container>
-
-      <Container maxW="container.xl">
-        <Divider />
-        <Box mt={[4, 6, 12]} textAlign="center" fontSize={["md", "lg", "xl"]}>
-          {" "}
-          <Link as={NextLink} href="/group-tours">
+            <Link as={NextLink} href="/group-tours">
             <Button
               colorScheme="teal"
               size="lg"
@@ -111,7 +103,13 @@ export default function Home() {
               Расписание групповых экскурсий
             </Button>
           </Link>
-        </Box>
+          </Box>
+        </Flex>
+      </Container>
+
+      <Container maxW="container.xl">
+        <Divider mt={8}/>
+      
 
         <Text
           fontSize={["xl", "2xl", "3xl"]}

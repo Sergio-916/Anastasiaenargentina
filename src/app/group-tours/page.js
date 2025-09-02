@@ -50,7 +50,7 @@ export default async function GroupToursPage() {
   return (
     <Container maxW="container.lg" minH={["none", "none", "75vh"]}>
       <Heading size="lg" m={4}>
-        Расписание экскурсий на Август
+        Расписание экскурсий на Сентябрь
       </Heading>
       <List>
         {finteredTours.map((tour) => (
