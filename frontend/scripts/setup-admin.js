@@ -2,8 +2,9 @@
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
+const path = require('path');
 
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 async function setupAdminTable() {
   // Проверяем наличие переменной окружения
