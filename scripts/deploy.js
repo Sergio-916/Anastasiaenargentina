@@ -12,7 +12,7 @@ const config = {
 };
 
 const localRoot = path.join(__dirname, "..", "out");
-const htaccessPath = path.join(__dirname, "..", "htaccess");
+const htaccessPath = path.join(__dirname, "..", ".htaccess");
 
 const ftp = new Ftp();
 

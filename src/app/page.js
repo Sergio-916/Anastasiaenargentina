@@ -15,6 +15,7 @@ import {
 import { useBreakpointValue } from "@chakra-ui/react";
 import NextLink from "next/link";
 import MySwiperComponent from "./components/Carousel";
+import { SHOW_GROUP_TOURS } from "@/utils/settings";
 
 export default function Home() {
   const nastyaPhoto = "/nastya.jpg";
@@ -93,7 +94,7 @@ export default function Home() {
                 Экскурсии
               </Button>
             </Link>
-            <Link as={NextLink} href="/group-tours">
+            {SHOW_GROUP_TOURS && <Link as={NextLink} href="/group-tours">
             <Button
               colorScheme="teal"
               size="lg"
@@ -102,7 +103,7 @@ export default function Home() {
             >
               Расписание групповых экскурсий
             </Button>
-          </Link>
+          </Link>}
           </Box>
         </Flex>
       </Container>

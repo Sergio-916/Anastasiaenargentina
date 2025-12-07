@@ -3,12 +3,14 @@ import { query } from "@/utils/db";
 import {
   Container,
   Heading,
-  Box,
   List,
   ListItem,
   Text,
   Link,
 } from "@chakra-ui/react";
+import { SHOW_GROUP_TOURS } from "@/utils/settings";
+import NoGroupTours from "@/app/components/NoGroupTours";
+
 
 export const metadata = {
   title: "Групповые экскурсии",
@@ -41,22 +43,47 @@ export default async function GroupToursPage() {
     });
   };
 
-  const currectMonth = new Date().getMonth() + 1;
+  const monthNames = {
+  1: "Январь",
+  2: "Февраль",
+  3: "Март",
+  4: "Апрель",
+  5: "Май",
+  6: "Июнь",
+  7: "Июль",
+  8: "Август",
+  9: "Сентябрь", 
+  10: "Октябрь",
+  11: "Ноябрь",
+  12: "Декабрь",
+};
+  const currentMonth = new Date().getMonth() + 1;
+  const currentMonthName = monthNames[currentMonth];
+  const nextMonth = new Date().getMonth() + 2;
+  const nextMonthName = monthNames[nextMonth]
 
-  const finteredTours = scheduledTours.filter((tour) => {
-    return new Date(tour.raw_date).getMonth() + 1 === currectMonth;
+const finteredTours = scheduledTours.filter((tour) => {
+    const tourMonth = new Date(tour.raw_date).getMonth() + 1;
+
+    return tourMonth === currentMonth || tourMonth === nextMonth;
   });
+
+
+  if (!SHOW_GROUP_TOURS) {
+    return <NoGroupTours />;
+  } 
 
   return (
     <Container maxW="container.lg" minH={["none", "none", "75vh"]}>
       <Heading size="lg" m={4}>
-        Расписание экскурсий на Сентябрь
+        Расписание экскурсий на {currentMonthName} 
+        { nextMonthName ? `и ${nextMonthName}` : ""}
       </Heading>
       <List>
         {finteredTours.map((tour) => (
           <ListItem key={tour.date_id}>
             <Link href={`/group-tours/${tour.slug}/${tour.date_id}`}>
-              📅{formatDate(tour.raw_date)}, {tour.time} - {tour.name}
+              📅 {formatDate(tour.raw_date)}, {tour.time} - {tour.name}
             </Link>
           </ListItem>
         ))}
