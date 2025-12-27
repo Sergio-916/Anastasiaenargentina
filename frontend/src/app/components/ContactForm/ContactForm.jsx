@@ -10,7 +10,6 @@ import {
   Button,
   Text,
 } from "@chakra-ui/react";
-import emailjs from "@emailjs/browser";
 import { useState, useRef, useEffect } from "react";
 
 function ContactForm() {
@@ -18,36 +17,51 @@ function ContactForm() {
 
   const [message, setMessage] = useState(false);
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [input, setInput] = useState("");
   const [input2, setInput2] = useState("");
   const [input3, setInput3] = useState("");
   const [inputPhone, setInputPhone] = useState("");
 
-  const sendEmail = (e) => {
+  const sendContact = async (e) => {
     e.preventDefault();
     setMessage(false);
     setError(null);
+    setIsLoading(true);
 
-    emailjs
-      .sendForm(
-        "service_kw0bprj",
-        "template_h7850r8",
-        form.current,
-        "XcUWmv7bmo-3o80Ah"
-      )
-      .then(
-        (result) => {
-          // console.log(result.text);
-          form.current.reset(); /// reset form
-          setMessage(true);
+    try {
+      const response = await fetch("/api/contacts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        (error) => {
-          // console.log(error.text);
-          setError(
-            "Сервис временно недоступен. Пожалуйста, попробуйте еще раз."
-          );
-        }
+        body: JSON.stringify({
+          name: input,
+          phone: inputPhone,
+          email: input2,
+          message: input3,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to send message");
+      }
+
+      const data = await response.json();
+      form.current.reset();
+      setInput("");
+      setInput2("");
+      setInput3("");
+      setInputPhone("");
+      setMessage(true);
+    } catch (err) {
+      setError(
+        err.message || "Сервис временно недоступен. Пожалуйста, попробуйте еще раз."
       );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (e) => setInput(e.target.value);
@@ -74,7 +88,7 @@ function ContactForm() {
         boxShadow="lg"
       >
         <Heading>Свяжитесь со мной</Heading>
-        <form ref={form} onSubmit={sendEmail}>
+        <form ref={form} onSubmit={sendContact}>
           <FormControl>
             <FormLabel fontSize={['md', 'lg','xl']} mt={3}>Имя</FormLabel>
             <Input
@@ -108,6 +122,7 @@ function ContactForm() {
             colorScheme="teal"
             type="submit"
             value="Send"
+            isLoading={isLoading}
             isDisabled={input.length == 0 || input2.length == 0 || inputPhone.length == 0}
           >
             Отправить
