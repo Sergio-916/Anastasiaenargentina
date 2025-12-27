@@ -2,7 +2,7 @@ const Ftp = require("ftp");
 const path = require("path");
 const fs = require("fs");
 
-require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
+require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 
 const config = {
   host: process.env.FTP_HOST,

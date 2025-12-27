@@ -3,7 +3,7 @@ import { config } from 'dotenv';
 import path from 'path';
 
 // Load environment variables from frontend/.env
-config({ path: path.resolve(process.cwd(), '.env') });
+config({ path: path.resolve(process.cwd(), '../.env') });
 
 // Parse the DATABASE_URL to extract components
 const parseDbUrl = (url) => {
@@ -11,11 +11,11 @@ const parseDbUrl = (url) => {
     // Expected format: mysql://username:password@hostname:port/database
     const regex = /mysql:\/\/([^:]+):([^@]+)@([^:]+):?(\d*)\/(.+)/;
     const matches = url.match(regex);
-    
+
     if (!matches || matches.length < 6) {
       throw new Error('Invalid DATABASE_URL format');
     }
-    
+
     return {
       user: matches[1],
       password: matches[2],
@@ -56,7 +56,7 @@ export async function query({ query, values = [] }) {
       console.error('Failed to create static generation connection:', error.message);
     }
   }
-  
+
   try {
     // Use static connection for production builds, pool for everything else
     if (process.env.NODE_ENV === 'production' && staticGenConnection) {

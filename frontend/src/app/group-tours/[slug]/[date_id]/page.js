@@ -1,25 +1,47 @@
 import {
   Box,
-  Flex,
   Heading,
   Text,
   VStack,
-  Spacer,
   SimpleGrid,
   Container,
   Divider,
 } from "@chakra-ui/react";
-import { query } from "@/utils/db";
+
+// Base URL for API calls
+const getBaseUrl = () => process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
+// Fetch tour by slug and date_id
+async function fetchTour(slug, date_id) {
+  const baseUrl = getBaseUrl();
+  const res = await fetch(`${baseUrl}/api/tours/${slug}/${date_id}`, {
+    cache: 'no-store',
+  });
+
+  if (!res.ok) {
+    return null;
+  }
+
+  return await res.json();
+}
+
+// Fetch all scheduled tours
+async function fetchScheduledTours() {
+  const baseUrl = getBaseUrl();
+  const res = await fetch(`${baseUrl}/api/tours`, {
+    cache: 'no-store',
+  });
+
+  if (!res.ok) {
+    return [];
+  }
+
+  return await res.json();
+}
 
 export async function generateMetadata({ params }) {
   const { slug, date_id } = params;
-  const [tour] = await query({
-    query: `SELECT name, description FROM tours 
-    INNER JOIN
-     tour_date ON tours.id = tour_date.tour_id
-    WHERE tours.slug = ? AND tour_date.id = ?`,
-    values: [slug, date_id],
-  });
+  const tour = await fetchTour(slug, date_id);
 
   if (!tour) {
     return {
@@ -35,15 +57,9 @@ export async function generateMetadata({ params }) {
 }
 
 export async function generateStaticParams() {
-  // Используем одно соединение для всех запросов
   try {
     console.log("Generating static params for group tours...");
-    const scheduledTours = await query({
-      query: `SELECT t.slug, td.id AS date_id
-              FROM tours AS t
-              INNER JOIN tour_date AS td ON t.id = td.tour_id`,
-    });
-    
+    const scheduledTours = await fetchScheduledTours();
     console.log(`Found ${scheduledTours.length} tour dates for static generation`);
     
     return scheduledTours.map((tour) => ({
@@ -52,23 +68,20 @@ export async function generateStaticParams() {
     }));
   } catch (error) {
     console.error("Error generating static params:", error);
-    return []; // Возвращаем пустой массив в случае ошибки
+    return [];
   }
 }
 
 export default async function TourPage({ params }) {
   const { slug, date_id } = params;
-  // const date_id = searchParams?.date_id;
-  const [tour] = await query({
-    query: `SELECT * FROM tours 
-    INNER JOIN
-     tour_date ON tours.id = tour_date.tour_id
-    WHERE tours.slug = ? AND tour_date.id = ?`,
-    values: [slug, date_id],
-  });
+  const tour = await fetchTour(slug, date_id);
 
   if (!tour) {
-    return <div>Tour not found</div>;
+    return (
+      <Container maxW="container.lg" mt={4}>
+        <Text>Тур не найден</Text>
+      </Container>
+    );
   }
 
   const formatDate = (dateStr) => {

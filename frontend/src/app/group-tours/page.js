@@ -1,5 +1,4 @@
 import NextLink from "next/link";
-import { query } from "@/utils/db";
 import {
   Container,
   Heading,
@@ -18,22 +17,17 @@ export const metadata = {
 };
 
 export default async function GroupToursPage() {
-  const scheduledTours = await query({
-    query: `    
-      SELECT
-        t.name,
-        t.slug,        
-        td.id AS date_id,
-        td.date AS raw_date,
-        td.time       
-      FROM
-        tours AS t
-      INNER JOIN
-        tour_date AS td ON t.id = td.tour_id
-      ORDER BY
-        td.date, td.time;
-    `,
+  // Fetch scheduled tours from Next.js API route (which proxies to backend)
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const res = await fetch(`${baseUrl}/api/tours`, {
+    cache: 'no-store',
   });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch tours: ${res.status}`);
+  }
+
+  const scheduledTours = await res.json();
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -59,10 +53,10 @@ export default async function GroupToursPage() {
 };
   const currentMonth = new Date().getMonth() + 1;
   const currentMonthName = monthNames[currentMonth];
-  const nextMonth = new Date().getMonth() + 2;
-  const nextMonthName = monthNames[nextMonth]
+  const nextMonth = currentMonth === 12 ? 1 : currentMonth + 1;
+  const nextMonthName = monthNames[nextMonth];
 
-const finteredTours = scheduledTours.filter((tour) => {
+const filteredTours = scheduledTours.filter((tour) => {
     const tourMonth = new Date(tour.raw_date).getMonth() + 1;
 
     return tourMonth === currentMonth || tourMonth === nextMonth;
@@ -77,10 +71,10 @@ const finteredTours = scheduledTours.filter((tour) => {
     <Container maxW="container.lg" minH={["none", "none", "75vh"]}>
       <Heading size="lg" m={4}>
         Расписание экскурсий на {currentMonthName} 
-        { nextMonthName ? `и ${nextMonthName}` : ""}
+        { nextMonthName ? ` и ${nextMonthName}` : ""}
       </Heading>
       <List>
-        {finteredTours.map((tour) => (
+        {filteredTours.map((tour) => (
           <ListItem key={tour.date_id}>
             <Link href={`/group-tours/${tour.slug}/${tour.date_id}`}>
               📅 {formatDate(tour.raw_date)}, {tour.time} - {tour.name}
