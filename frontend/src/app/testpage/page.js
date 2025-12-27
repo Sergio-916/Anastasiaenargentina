@@ -1,7 +1,11 @@
 
 'use client';
-
+import { notFound } from 'next/navigation';
 import { useEffect, useState } from 'react';
+
+const DoNotShow = true
+
+
 
 export default function TestPage() {
     const [tours, setTours] = useState([]);
@@ -29,6 +33,10 @@ export default function TestPage() {
 
     if (loading) return <div className="p-10">Loading tours...</div>;
     if (error) return <div className="p-10 text-red-500">Error: {error}</div>;
+
+    if (DoNotShow) {
+        notFound();
+    }
 
     return (
         <div className="p-10">

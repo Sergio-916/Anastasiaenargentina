@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { notFound } from 'next/navigation';
 import { Button, Container, Heading, Input, FormControl, FormLabel, Box, Text, Textarea } from '@chakra-ui/react';
 
 // WARNING: This is not a secure way to protect a page.
@@ -30,6 +31,8 @@ export default function AdminPage() {
     console.log("Content:", content);
     alert('Data logged to console. You can copy it from there.');
   };
+
+  return notFound();
 
   if (!isAuthenticated) {
     return (
