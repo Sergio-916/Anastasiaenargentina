@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postbuild": "next-sitemap",
-    "deploy": "npm run build && node scripts/deploy.js"
+    "postbuild": "next-sitemap"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.1.1",
@@ -24,7 +23,6 @@
     "dotenv": "^16.6.0",
     "emailjs": "^4.0.3",
     "framer-motion": "^11.0.22",
-    "ftp": "^0.3.10",
     "gray-matter": "^4.0.3",
     "markdown-to-jsx": "^7.5.0",
     "mysql2": "^3.14.1",

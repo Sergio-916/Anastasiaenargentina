@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET(request, { params }) {
     try {
-        const { slug, date_id } = params;
+        const { slug, date_id } = await params;
         const backendUrl = process.env.BACKEND_URL || 'http://127.0.0.1:8000';
         const res = await fetch(`${backendUrl}/api/v1/tours/${slug}/${date_id}`, {
             cache: 'no-store',

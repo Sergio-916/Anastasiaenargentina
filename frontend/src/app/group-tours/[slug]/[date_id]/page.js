@@ -8,6 +8,9 @@ import {
   Divider,
 } from "@chakra-ui/react";
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
+
 // Base URL for API calls
 const getBaseUrl = () => process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
@@ -40,7 +43,7 @@ async function fetchScheduledTours() {
 }
 
 export async function generateMetadata({ params }) {
-  const { slug, date_id } = params;
+  const { slug, date_id } = await params;
   const tour = await fetchTour(slug, date_id);
 
   if (!tour) {
@@ -73,7 +76,7 @@ export async function generateStaticParams() {
 }
 
 export default async function TourPage({ params }) {
-  const { slug, date_id } = params;
+  const { slug, date_id } = await params;
   const tour = await fetchTour(slug, date_id);
 
   if (!tour) {
