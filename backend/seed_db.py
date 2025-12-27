@@ -10,6 +10,7 @@ from psycopg import OperationalError
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from app.ssh_util import ssh_tunnel
+from app.core.config import settings
 
 # Configuration
 DB_HOST = "127.0.0.1"
@@ -136,60 +137,16 @@ def main():
     print(f"Connecting to database at {DB_HOST}:{DB_PORT}...")
     
     try:
-        with ssh_tunnel():
-            # Connect to "postgres" first to check db? No, check_db connects to DB_NAME directly.
-            conn = psycopg.connect(
-                host=DB_HOST,
-                port=DB_PORT,
-                user=DB_USER,
-                password=DB_PASS,
-                dbname=DB_NAME,
-                connect_timeout=10
-            )
-            conn.autocommit = True
-            
-            print("Connected!")
-            
-            with conn.cursor() as cur:
-                # 1. Drop existing tables
-                print("Dropping existing tables...")
-                for table in DDL_STATEMENTS.keys():
-                    cur.execute(f'DROP TABLE IF EXISTS "{table}" CASCADE')
-                
-                # 2. Create tables
-                print("Creating tables...")
-                for table, ddl in DDL_STATEMENTS.items():
-                    print(f"  Creating {table}...")
-                    cur.execute(ddl)
-                
-                # 3. Insert data
-                print("Inserting data...")
-                inserts = parse_sql_dump(SQL_FILE)
-                for sql in inserts:
-                    # Extract table name from SQL for logging
-                    match = re.search(r'INSERT INTO "([^"]+)"', sql)
-                    table_name = match.group(1) if match else "unknown"
-                    print(f"  Inserting into {table_name}...")
-                    try:
-                        cur.execute(sql)
-                    except Exception as e:
-                        print(f"  Error inserting into {table_name}: {e}")
-                        # Print start of SQL to debug
-                        print(f"  SQL snippet: {sql[:100]}...")
-                        sys.exit(1)
-                
-                # 4. Reset sequences (fix auto-increment)
-                print("Resetting sequences...")
-                for table in DDL_STATEMENTS.keys():
-                    try:
-                        # Assuming 'id' is the serial column
-                        cur.execute(f"SELECT setval(pg_get_serial_sequence('{table}', 'id'), max(id)) FROM \"{table}\"")
-                    except Exception as e:
-                        print(f"  Could not reset sequence for {table} (might be empty): {e}")
-
-            print("SUCCESS: Database seeded successfully!")
-            conn.close()
-
+        # In local environment, create SSH tunnel before connecting to DB
+        if settings.ENVIRONMENT == "local":
+            print("Local environment detected, creating SSH tunnel...")
+            with ssh_tunnel():
+                print("SSH tunnel active, connecting to database...")
+                _seed_database()
+        else:
+            # In production/staging, connect directly without tunnel
+            print(f"Connecting directly (environment: {settings.ENVIRONMENT})...")
+            _seed_database()
     except OperationalError as e:
         print(f"FAILURE: Could not connect to database.\nError: {e}")
         sys.exit(1)
@@ -198,6 +155,60 @@ def main():
         import traceback
         traceback.print_exc()
         sys.exit(1)
+
+def _seed_database():
+    """Helper function to seed the database"""
+    conn = psycopg.connect(
+        host=DB_HOST,
+        port=DB_PORT,
+        user=DB_USER,
+        password=DB_PASS,
+        dbname=DB_NAME,
+        connect_timeout=10
+    )
+    conn.autocommit = True
+    
+    print("Connected!")
+    
+    with conn.cursor() as cur:
+        # 1. Drop existing tables
+        print("Dropping existing tables...")
+        for table in DDL_STATEMENTS.keys():
+            cur.execute(f'DROP TABLE IF EXISTS "{table}" CASCADE')
+        
+        # 2. Create tables
+        print("Creating tables...")
+        for table, ddl in DDL_STATEMENTS.items():
+            print(f"  Creating {table}...")
+            cur.execute(ddl)
+        
+        # 3. Insert data
+        print("Inserting data...")
+        inserts = parse_sql_dump(SQL_FILE)
+        for sql in inserts:
+            # Extract table name from SQL for logging
+            match = re.search(r'INSERT INTO "([^"]+)"', sql)
+            table_name = match.group(1) if match else "unknown"
+            print(f"  Inserting into {table_name}...")
+            try:
+                cur.execute(sql)
+            except Exception as e:
+                print(f"  Error inserting into {table_name}: {e}")
+                # Print start of SQL to debug
+                print(f"  SQL snippet: {sql[:100]}...")
+                sys.exit(1)
+        
+        # 4. Reset sequences (fix auto-increment)
+        print("Resetting sequences...")
+        for table in DDL_STATEMENTS.keys():
+            try:
+                # Assuming 'id' is the serial column
+                cur.execute(f"SELECT setval(pg_get_serial_sequence('{table}', 'id'), max(id)) FROM \"{table}\"")
+            except Exception as e:
+                print(f"  Could not reset sequence for {table} (might be empty): {e}")
+
+    print("SUCCESS: Database seeded successfully!")
+    conn.close()
 
 if __name__ == "__main__":
     main()
