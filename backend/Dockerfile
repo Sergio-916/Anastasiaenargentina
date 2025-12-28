@@ -4,6 +4,14 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app/
 
+# --- ADD: install Node + MJML (for email templates build) ---
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends nodejs npm \
+    && npm install -g mjml \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+# ------------------------------------------------------------
+
 # Install uv
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#installing-uv
 COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /uvx /bin/
@@ -35,6 +43,11 @@ COPY ./pyproject.toml ./uv.lock ./alembic.ini /app/
 
 COPY ./app /app/app
 COPY ./tests /app/tests
+
+# --- ADD: compile MJML templates into HTML build/ folder ---
+RUN mkdir -p /app/app/email-templates/build \
+    && mjml /app/app/email-templates/src/*.mjml -o /app/app/email-templates/build
+# ----------------------------------------------------------
 
 # Sync the project
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
