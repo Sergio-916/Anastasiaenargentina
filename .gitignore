@@ -16,6 +16,11 @@ out/
 # production
 build/
 
+# allow email templates build
+!backend/app/email-templates/
+!backend/app/email-templates/build/
+!backend/app/email-templates/build/**
+
 # misc
 .DS_Store
 *.pem
