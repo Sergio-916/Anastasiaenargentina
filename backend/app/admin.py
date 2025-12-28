@@ -168,7 +168,7 @@ class TourDateAdmin(ModelView, model=TourDate):
     """
     Admin interface for TourDate model.
     """
-    column_list = [TourDate.id, TourDate.tour_id, TourDate.date, TourDate.time]
+    column_list = [TourDate.id, TourDate.tour_id, TourDate.tour, TourDate.date, TourDate.time]
     column_searchable_list = [TourDate.time]
     column_sortable_list = [TourDate.id, TourDate.date, TourDate.tour_id]
     column_default_sort = [(TourDate.date, True)]
@@ -233,7 +233,7 @@ def setup_admin(app, secret_key: str) -> Admin:
         Admin instance
     """
     # Add session middleware for authentication
-    app.add_middleware(SessionMiddleware, secret_key=secret_key)
+    app.add_middleware(SessionMiddleware, secret_key=secret_key, max_age=60*60*24*30, https_only=False, same_site='lax')
     
     # Create authentication backend
     authentication_backend = AdminAuth(secret_key=secret_key)
