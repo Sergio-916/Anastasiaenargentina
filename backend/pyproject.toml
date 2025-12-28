@@ -23,6 +23,7 @@ dependencies = [
     "pyjwt<3.0.0,>=2.8.0",
     "dotenv>=0.9.9",
     "ipykernel>=7.1.0",
+    "sqladmin<1.0.0,>=0.18.0",
 ]
 
 [dependency-groups]
