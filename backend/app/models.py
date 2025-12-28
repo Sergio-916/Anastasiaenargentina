@@ -18,8 +18,8 @@ class AdminUser(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     username: str = Field(unique=True, max_length=255)
     password_hash: str = Field(max_length=255)
-    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
-    updated_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    created_at: Optional[datetime] = Field(default_factory=datetime.now)
+    updated_at: Optional[datetime] = Field(default_factory=datetime.now)
 
 # -----------------------------------------------------
 # Contacts
@@ -29,9 +29,18 @@ class Contact(SQLModel, table=True):
     
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(max_length=255)
+    phone: str = Field(max_length=50)
     email: str = Field(max_length=255)
     message: str 
-    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    created_at: Optional[datetime] = Field(default_factory=datetime.now)
+
+
+# Pydantic model for creating contacts
+class ContactCreate(SQLModel):
+    name: str = Field(max_length=255)
+    phone: str = Field(max_length=50)
+    email: str = Field(max_length=255)
+    message: str
 
 # -----------------------------------------------------
 # Tours

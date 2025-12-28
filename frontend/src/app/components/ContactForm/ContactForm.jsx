@@ -10,59 +10,71 @@ import {
   Button,
   Text,
 } from "@chakra-ui/react";
-import emailjs from "@emailjs/browser";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 
 function ContactForm() {
   const form = useRef();
 
   const [message, setMessage] = useState(false);
   const [error, setError] = useState(null);
-  const [input, setInput] = useState("");
-  const [input2, setInput2] = useState("");
-  const [input3, setInput3] = useState("");
-  const [inputPhone, setInputPhone] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    message: "",
+  });
 
-  const sendEmail = (e) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const sendContact = async (e) => {
     e.preventDefault();
     setMessage(false);
     setError(null);
+    setIsLoading(true);
 
-    emailjs
-      .sendForm(
-        "service_kw0bprj",
-        "template_h7850r8",
-        form.current,
-        "XcUWmv7bmo-3o80Ah"
-      )
-      .then(
-        (result) => {
-          // console.log(result.text);
-          form.current.reset(); /// reset form
-          setMessage(true);
+    try {
+      const response = await fetch("/api/contacts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        (error) => {
-          // console.log(error.text);
-          setError(
-            "Сервис временно недоступен. Пожалуйста, попробуйте еще раз."
-          );
-        }
+        body: JSON.stringify({
+          name: formData.name,
+          phone: formData.phone,
+          email: formData.email,
+          message: formData.message,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to send message");
+      }
+
+      await response.json();
+      form.current.reset();
+      setFormData({
+        name: "",
+        phone: "",
+        email: "",
+        message: "",
+      });
+      setMessage(true);
+    } catch (err) {
+      setError(
+        err.message || "Сервис временно недоступен. Пожалуйста, попробуйте еще раз."
       );
-  };
-
-  const handleInputChange = (e) => setInput(e.target.value);
-  const handleInputChange2 = (e) => setInput2(e.target.value);
-  const handleInputChange3 = (e) => setInput3(e.target.value);
-  const handleInputChangePhone = (e) => setInputPhone(e.target.value);
-
-  useEffect(() => {
-    if (message) {
-      setInput("");
-      setInput2("");
-      setInput3("");
-      setInputPhone("");
+    } finally {
+      setIsLoading(false);
     }
-  }, [message]);
+  };
 
   return (
     <>
@@ -74,31 +86,35 @@ function ContactForm() {
         boxShadow="lg"
       >
         <Heading>Свяжитесь со мной</Heading>
-        <form ref={form} onSubmit={sendEmail}>
+        <form ref={form} onSubmit={sendContact}>
           <FormControl>
             <FormLabel fontSize={['md', 'lg','xl']} mt={3}>Имя</FormLabel>
             <Input
               type="text"
-              name="from_name"
-              value={input}
-              onChange={handleInputChange}
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
             />
             <FormLabel fontSize={['md', 'lg','xl']} mt={3}>Телефон</FormLabel>
             <Input
               type="text"
-              name="user_phone"
-              value={inputPhone}
-              onChange={handleInputChangePhone}
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
             />
             <FormLabel fontSize={['md', 'lg','xl']} mt={3}>Email</FormLabel>
             <Input
               type="email"
-              name="user_email"
-              value={input2}
-              onChange={handleInputChange2}
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
             />
             <FormLabel fontSize={['md', 'lg','xl']} mt={3}>Сообщение</FormLabel>
-            <Textarea onChange={handleInputChange3} value={input3} name="message" />
+            <Textarea
+              name="message"
+              value={formData.message}
+              onChange={handleChange}
+            />
           </FormControl>
           <Button
             size={["sm", "md", "lg"]}
@@ -107,8 +123,8 @@ function ContactForm() {
             mt={5}
             colorScheme="teal"
             type="submit"
-            value="Send"
-            isDisabled={input.length == 0 || input2.length == 0 || inputPhone.length == 0}
+            isLoading={isLoading}
+            isDisabled={!formData.name || !formData.email || !formData.phone}
           >
             Отправить
           </Button>
