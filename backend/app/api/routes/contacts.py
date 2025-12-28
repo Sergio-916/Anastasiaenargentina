@@ -39,7 +39,6 @@ def create_contact(
                 html_content=email_data.html_content,
             )
         except Exception as e:
-            # Log error but don't fail the request if email sending fails
             import logging
             logger = logging.getLogger(__name__)
             logger.error(f"Failed to send contact notification email: {e}")

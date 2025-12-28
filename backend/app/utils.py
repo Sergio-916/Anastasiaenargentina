@@ -37,10 +37,30 @@ def send_email(
     html_content: str = "",
 ) -> None:
     assert settings.emails_enabled, "no provided configuration for email variables"
+    
+    def clean_string(s: str, aggressive: bool = False) -> str:
+        """Clean string from problematic Unicode characters that cause ASCII encoding errors."""
+        if not s:
+            return ""
+        s = str(s)
+        cleaned = s.replace('\xa0', ' ').replace('\u200b', '').replace('\u200c', '').replace('\u200d', '').replace('\u00a0', ' ')
+        if aggressive:
+            cleaned = ''.join(char if ord(char) < 128 or char.isprintable() else ' ' for char in cleaned)
+            cleaned = ' '.join(cleaned.split())
+        return cleaned.encode('utf-8', errors='replace').decode('utf-8')
+    
+    from_email_name = clean_string(str(settings.EMAILS_FROM_NAME or ""), aggressive=True)
+    from_email_addr = str(settings.EMAILS_FROM_EMAIL)
+    clean_subject = clean_string(str(subject), aggressive=True)
+    clean_html = clean_string(str(html_content), aggressive=True)
+    
+    from email.utils import formataddr
+    mail_from_formatted = formataddr((from_email_name, from_email_addr)) if from_email_name else from_email_addr
+    
     message = emails.Message(
-        subject=subject,
-        html=html_content,
-        mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
+        subject=clean_subject,
+        html=clean_html,
+        mail_from=mail_from_formatted,
     )
     smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
     if settings.SMTP_TLS:
@@ -48,11 +68,29 @@ def send_email(
     elif settings.SMTP_SSL:
         smtp_options["ssl"] = True
     if settings.SMTP_USER:
-        smtp_options["user"] = settings.SMTP_USER
+        smtp_options["user"] = clean_string(str(settings.SMTP_USER), aggressive=False).strip()
     if settings.SMTP_PASSWORD:
-        smtp_options["password"] = settings.SMTP_PASSWORD
-    response = message.send(to=email_to, smtp=smtp_options)
-    logger.info(f"send email result: {response}")
+        smtp_options["password"] = clean_string(str(settings.SMTP_PASSWORD), aggressive=False).strip()
+    
+    try:
+        response = message.send(to=email_to, smtp=smtp_options)
+        if isinstance(response, bool) and not response:
+            raise Exception("Email send returned False")
+        elif hasattr(response, 'status_code') and response.status_code != 250:
+            error_detail = str(response.error) if hasattr(response, 'error') else ""
+            error_msg = f"Email send failed: {error_detail}"
+            if '535' in error_detail or 'BadCredentials' in error_detail or 'Username and Password not accepted' in error_detail:
+                error_msg += "\n\nGmail requires an App Password. See: https://myaccount.google.com/apppasswords"
+            raise Exception(error_msg)
+        elif hasattr(response, 'error') and response.error:
+            error_detail = str(response.error)
+            error_msg = f"Email send failed: {error_detail}"
+            if '535' in error_detail or 'BadCredentials' in error_detail or 'Username and Password not accepted' in error_detail:
+                error_msg += "\n\nGmail requires an App Password. See: https://myaccount.google.com/apppasswords"
+            raise Exception(error_msg)
+    except Exception as e:
+        logger.error(f"Failed to send email: {e}")
+        raise
 
 
 def generate_test_email(email_to: str) -> EmailData:

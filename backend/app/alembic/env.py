@@ -20,6 +20,7 @@ fileConfig(config.config_file_name)
 
 from app.models import SQLModel  # noqa
 from app.core.config import settings # noqa
+from app.ssh_util import ssh_tunnel  # noqa
 
 target_metadata = SQLModel.metadata
 
@@ -69,13 +70,24 @@ def run_migrations_online():
         poolclass=pool.NullPool,
     )
 
-    with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata, compare_type=True
-        )
+    # In local environment, create SSH tunnel before connecting to DB
+    if settings.ENVIRONMENT == "local":
+        with ssh_tunnel():
+            with connectable.connect() as connection:
+                context.configure(
+                    connection=connection, target_metadata=target_metadata, compare_type=True
+                )
 
-        with context.begin_transaction():
-            context.run_migrations()
+                with context.begin_transaction():
+                    context.run_migrations()
+    else:
+        with connectable.connect() as connection:
+            context.configure(
+                connection=connection, target_metadata=target_metadata, compare_type=True
+            )
+
+            with context.begin_transaction():
+                context.run_migrations()
 
 
 if context.is_offline_mode():
