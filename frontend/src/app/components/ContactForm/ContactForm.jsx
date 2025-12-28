@@ -40,7 +40,8 @@ function ContactForm() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/contact-submit", {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://127.0.0.1:8000';
+      const response = await fetch(`${backendUrl}/api/v1/contacts/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -55,7 +56,7 @@ function ContactForm() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to send message");
+        throw new Error(errorData.detail || errorData.error || "Failed to send message");
       }
 
       await response.json();

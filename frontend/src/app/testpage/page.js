@@ -15,7 +15,10 @@ export default function TestPage() {
     useEffect(() => {
         async function fetchTours() {
             try {
-                const res = await fetch('/api/test');
+                const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://127.0.0.1:8000';
+                const res = await fetch(`${backendUrl}/api/v1/tours/`, {
+                    cache: 'no-store',
+                });
                 if (!res.ok) {
                     throw new Error('Failed to fetch data');
                 }

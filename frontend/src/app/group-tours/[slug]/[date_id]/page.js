@@ -11,39 +11,24 @@ import {
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic';
 
-// Base URL for API calls
-const getBaseUrl = () => process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-
 // Fetch tour by slug and date_id
 async function fetchTour(slug, date_id) {
-  const baseUrl = getBaseUrl();
-  const res = await fetch(`${baseUrl}/api/tours/${slug}/${date_id}`, {
+  const backendUrl = process.env.BACKEND_URL || "http://anastasia_backend:8000";
+  const res = await fetch(`${backendUrl}/api/v1/tours/${slug}/${date_id}`, {
     cache: 'no-store',
   });
 
   if (!res.ok) {
-    return null;
+    const body = await res.text().catch(() => "");
+    throw new Error(`fetchTour failed: ${res.status} ${body.slice(0,200)}`);
   }
 
   return await res.json();
 }
 
-// Fetch all scheduled tours
-async function fetchScheduledTours() {
-  const baseUrl = getBaseUrl();
-  const res = await fetch(`${baseUrl}/api/tours`, {
-    cache: 'no-store',
-  });
-
-  if (!res.ok) {
-    return [];
-  }
-
-  return await res.json();
-}
 
 export async function generateMetadata({ params }) {
-  const { slug, date_id } = await params;
+  const { slug, date_id } = params;
   const tour = await fetchTour(slug, date_id);
 
   if (!tour) {
@@ -59,24 +44,9 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export async function generateStaticParams() {
-  try {
-    console.log("Generating static params for group tours...");
-    const scheduledTours = await fetchScheduledTours();
-    console.log(`Found ${scheduledTours.length} tour dates for static generation`);
-    
-    return scheduledTours.map((tour) => ({
-      slug: tour.slug,
-      date_id: String(tour.date_id),
-    }));
-  } catch (error) {
-    console.error("Error generating static params:", error);
-    return [];
-  }
-}
 
 export default async function TourPage({ params }) {
-  const { slug, date_id } = await params;
+  const { slug, date_id } = params;
   const tour = await fetchTour(slug, date_id);
 
   if (!tour) {

@@ -14,7 +14,8 @@ function HomePage() {
     setStatus("Отправка...");
 
     try {
-      const response = await fetch("/api/submit-form", {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://127.0.0.1:8000';
+      const response = await fetch(`${backendUrl}/api/v1/contacts/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -30,7 +31,7 @@ function HomePage() {
         setEmail("");
         setMessage("");
       } else {
-        setStatus(`Ошибка: ${data.message || "Что-то пошло не так."}`);
+        setStatus(`Ошибка: ${data.detail || data.error || data.message || "Что-то пошло не так."}`);
       }
     } catch (error) {
       console.error("Ошибка при отправке формы:", error);

@@ -10,21 +10,19 @@ import {
 import { SHOW_GROUP_TOURS } from "@/utils/settings";
 import NoGroupTours from "@/app/components/NoGroupTours";
 
-
 export const metadata = {
   title: "Групповые экскурсии",
   description: "Групповые экскурсии по Буэнос Айресу",
 };
 
 export default async function GroupToursPage() {
-  // Fetch scheduled tours from Next.js API route (which proxies to backend)
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-  const res = await fetch(`${baseUrl}/api/tours`, {
-    cache: 'no-store',
-  });
+  // ✅ baseUrl from request headers (works on VPS behind reverse proxy)
+  const backendUrl = process.env.BACKEND_URL || "http://anastasia_backend:8000";
+  const res = await fetch(`${backendUrl}/api/v1/tours/`, { cache: "no-store" });
 
   if (!res.ok) {
-    throw new Error(`Failed to fetch tours: ${res.status}`);
+    const body = await res.text().catch(() => "");
+    throw new Error(`Failed to fetch tours: ${res.status}. ${body.slice(0, 200)}`);
   }
 
   const scheduledTours = await res.json();
@@ -36,7 +34,7 @@ export default async function GroupToursPage() {
       month: "long",
     });
   };
-
+  
   const monthNames = {
   1: "Январь",
   2: "Февраль",
