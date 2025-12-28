@@ -43,26 +43,6 @@ class ContactCreate(SQLModel):
     message: str
 
 # -----------------------------------------------------
-# Contact Info (for displaying contact information on the site)
-# -----------------------------------------------------
-class ContactInfo(SQLModel, table=True):
-    __tablename__ = "contact_info"
-    
-    id: Optional[int] = Field(default=None, primary_key=True)
-    phone: str = Field(max_length=50)
-    email: str = Field(max_length=255)
-    whatsapp_url: str = Field(max_length=500)
-    created_at: Optional[datetime] = Field(default_factory=datetime.now)
-    updated_at: Optional[datetime] = Field(default_factory=datetime.now)
-
-
-# Response model for ContactInfo
-class ContactInfoResponse(SQLModel):
-    phone: str
-    email: str
-    whatsapp_url: str
-
-# -----------------------------------------------------
 # Tours
 # -----------------------------------------------------
 class Tour(SQLModel, table=True):

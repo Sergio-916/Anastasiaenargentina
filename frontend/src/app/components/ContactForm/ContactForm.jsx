@@ -10,7 +10,7 @@ import {
   Button,
   Text,
 } from "@chakra-ui/react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 
 function ContactForm() {
   const form = useRef();
@@ -18,10 +18,20 @@ function ContactForm() {
   const [message, setMessage] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [input, setInput] = useState("");
-  const [input2, setInput2] = useState("");
-  const [input3, setInput3] = useState("");
-  const [inputPhone, setInputPhone] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    message: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const sendContact = async (e) => {
     e.preventDefault();
@@ -36,10 +46,10 @@ function ContactForm() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: input,
-          phone: inputPhone,
-          email: input2,
-          message: input3,
+          name: formData.name,
+          phone: formData.phone,
+          email: formData.email,
+          message: formData.message,
         }),
       });
 
@@ -48,12 +58,14 @@ function ContactForm() {
         throw new Error(errorData.error || "Failed to send message");
       }
 
-      const data = await response.json();
+      await response.json();
       form.current.reset();
-      setInput("");
-      setInput2("");
-      setInput3("");
-      setInputPhone("");
+      setFormData({
+        name: "",
+        phone: "",
+        email: "",
+        message: "",
+      });
       setMessage(true);
     } catch (err) {
       setError(
@@ -63,20 +75,6 @@ function ContactForm() {
       setIsLoading(false);
     }
   };
-
-  const handleInputChange = (e) => setInput(e.target.value);
-  const handleInputChange2 = (e) => setInput2(e.target.value);
-  const handleInputChange3 = (e) => setInput3(e.target.value);
-  const handleInputChangePhone = (e) => setInputPhone(e.target.value);
-
-  useEffect(() => {
-    if (message) {
-      setInput("");
-      setInput2("");
-      setInput3("");
-      setInputPhone("");
-    }
-  }, [message]);
 
   return (
     <>
@@ -93,26 +91,30 @@ function ContactForm() {
             <FormLabel fontSize={['md', 'lg','xl']} mt={3}>Имя</FormLabel>
             <Input
               type="text"
-              name="from_name"
-              value={input}
-              onChange={handleInputChange}
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
             />
             <FormLabel fontSize={['md', 'lg','xl']} mt={3}>Телефон</FormLabel>
             <Input
               type="text"
-              name="user_phone"
-              value={inputPhone}
-              onChange={handleInputChangePhone}
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
             />
             <FormLabel fontSize={['md', 'lg','xl']} mt={3}>Email</FormLabel>
             <Input
               type="email"
-              name="user_email"
-              value={input2}
-              onChange={handleInputChange2}
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
             />
             <FormLabel fontSize={['md', 'lg','xl']} mt={3}>Сообщение</FormLabel>
-            <Textarea onChange={handleInputChange3} value={input3} name="message" />
+            <Textarea
+              name="message"
+              value={formData.message}
+              onChange={handleChange}
+            />
           </FormControl>
           <Button
             size={["sm", "md", "lg"]}
@@ -121,9 +123,8 @@ function ContactForm() {
             mt={5}
             colorScheme="teal"
             type="submit"
-            value="Send"
             isLoading={isLoading}
-            isDisabled={input.length == 0 || input2.length == 0 || inputPhone.length == 0}
+            isDisabled={!formData.name || !formData.email || !formData.phone}
           >
             Отправить
           </Button>

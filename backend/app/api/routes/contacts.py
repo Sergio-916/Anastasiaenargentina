@@ -38,6 +38,11 @@ def create_contact(
                 subject=email_data.subject,
                 html_content=email_data.html_content,
             )
+            send_email(
+                email_to=settings.EMAILS_FROM_EMAIL,
+                subject=email_data.subject,
+                html_content=email_data.html_content,
+            )
         except Exception as e:
             import logging
             logger = logging.getLogger(__name__)
