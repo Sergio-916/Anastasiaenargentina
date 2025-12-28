@@ -40,7 +40,7 @@ function ContactForm() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/contacts", {
+      const response = await fetch("/contact-submit", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

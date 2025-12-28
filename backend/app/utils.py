@@ -23,9 +23,20 @@ class EmailData:
 
 
 def render_email_template(*, template_name: str, context: dict[str, Any]) -> str:
-    template_str = (
-        Path(__file__).parent / "email-templates" / "build" / template_name
-    ).read_text()
+    template_path = Path(__file__).parent / "email-templates" / "build" / template_name
+    logger.debug(f"Looking for email template at: {template_path}")
+    if not template_path.exists():
+        # List available files for debugging
+        build_dir = template_path.parent
+        available_files = list(build_dir.glob("*.html")) if build_dir.exists() else []
+        error_msg = (
+            f"Email template not found: {template_path}. "
+            f"Make sure MJML templates are compiled. "
+            f"Available files in build directory: {[f.name for f in available_files]}"
+        )
+        logger.error(error_msg)
+        raise FileNotFoundError(error_msg)
+    template_str = template_path.read_text()
     html_content = Template(template_str).render(context)
     return html_content
 

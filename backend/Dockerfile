@@ -46,7 +46,17 @@ COPY ./tests /app/tests
 
 # --- ADD: compile MJML templates into HTML build/ folder ---
 RUN mkdir -p /app/app/email-templates/build \
-    && mjml /app/app/email-templates/src/*.mjml -o /app/app/email-templates/build
+    && if [ -d /app/app/email-templates/src ] && [ -n "$(ls -A /app/app/email-templates/src/*.mjml 2>/dev/null)" ]; then \
+        for file in /app/app/email-templates/src/*.mjml; do \
+            filename=$(basename "$file" .mjml); \
+            echo "Compiling $file to ${filename}.html"; \
+            mjml "$file" -o "/app/app/email-templates/build/${filename}.html" || exit 1; \
+        done \
+        && echo "MJML templates compiled successfully:" \
+        && ls -la /app/app/email-templates/build/; \
+    else \
+        echo "Warning: No MJML templates found in /app/app/email-templates/src/"; \
+    fi
 # ----------------------------------------------------------
 
 # Sync the project
