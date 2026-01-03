@@ -62,6 +62,9 @@ class Tour(SQLModel, table=True):
     # Relationships
     dates: list["TourDate"] = Relationship(back_populates="tour")
 
+    def __str__(self):
+        return self.name
+
 # -----------------------------------------------------
 # Tour Dates
 # -----------------------------------------------------

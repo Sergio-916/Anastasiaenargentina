@@ -17,7 +17,7 @@ export const metadata = {
 
 export default async function GroupToursPage() {
   // ✅ baseUrl from request headers (works on VPS behind reverse proxy)
-  const backendUrl = process.env.BACKEND_URL || "http://anastasia_backend:8000";
+  const backendUrl = process.env.ENVIRONMENT == "production" ? process.env.BACKEND_URL : "http://localhost:8000";
   const res = await fetch(`${backendUrl}/api/v1/tours/`, { cache: "no-store" });
 
   if (!res.ok) {
@@ -61,7 +61,7 @@ const filteredTours = scheduledTours.filter((tour) => {
   });
 
 
-  if (!SHOW_GROUP_TOURS) {
+  if (!filteredTours.name) {
     return <NoGroupTours />;
   } 
 

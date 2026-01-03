@@ -5,6 +5,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.api.main import api_router
 from app.core.config import settings
+from app.admin import setup_admin
 
 
 from contextlib import asynccontextmanager
@@ -48,3 +49,6 @@ if settings.all_cors_origins:
     )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+# Setup admin panel
+setup_admin(app, secret_key=settings.SECRET_KEY)
