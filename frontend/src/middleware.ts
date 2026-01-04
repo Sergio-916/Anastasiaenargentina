@@ -14,7 +14,13 @@ export function middleware(request) {
         // Ensure trailing slash for /admin to avoid backend unnecessary redirect logic if possible, 
         // but usually exact mapping is safer if we handle headers.
         // Use the backend internal hostname
-        const url = new URL(pathname, 'http://backend:8000')
+        
+        const backendUrl = process.env.BACKEND_URL || 
+                         (process.env.NODE_ENV === 'production' 
+                             ? 'http://backend:8000' 
+                             : 'http://localhost:8000')
+        
+        const url = new URL(pathname, backendUrl)
         url.search = request.nextUrl.search
 
         // Create new headers, preserving the original Host header (or setting X-Forwarded-Host)
