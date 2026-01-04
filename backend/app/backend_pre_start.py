@@ -40,6 +40,9 @@ def main() -> None:
         with ssh_tunnel():
             logger.info("SSH tunnel active, checking database connection...")
             init(engine)
+        # Small delay to ensure SSH tunnel is fully closed before alembic tries to create a new one
+        import time
+        time.sleep(1)
     else:
         init(engine)
     

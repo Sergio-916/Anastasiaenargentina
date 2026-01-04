@@ -18,7 +18,8 @@ fileConfig(config.config_file_name)
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
 
-from app.models import SQLModel  # noqa
+import app.models  # noqa: F401  (важно: просто импортнуть пакет)
+from sqlmodel import SQLModel
 from app.core.config import settings # noqa
 from app.ssh_util import ssh_tunnel  # noqa
 

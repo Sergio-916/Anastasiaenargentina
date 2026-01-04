@@ -1,3 +1,4 @@
+import logging
 import os
 import socket
 import subprocess
@@ -33,6 +34,36 @@ def wait_port(host: str, port: int, timeout_s: float = 5.0) -> None:
 
 @contextmanager
 def ssh_tunnel(local_port: int = LOCAL_PORT):
+    # Check if port is already in use and try to free it
+    try:
+        with socket.create_connection(("127.0.0.1", local_port), timeout=0.1):
+            # Port is in use, try to find and kill the SSH process
+            logger = logging.getLogger(__name__)
+            try:
+                # Try to find SSH process using this port
+                result = subprocess.run(
+                    ["lsof", "-ti", f":{local_port}"],
+                    capture_output=True,
+                    text=True,
+                    timeout=2
+                )
+                if result.returncode == 0 and result.stdout.strip():
+                    pids = result.stdout.strip().split('\n')
+                    for pid in pids:
+                        try:
+                            subprocess.run(["kill", "-9", pid], timeout=1)
+                            logger.warning(f"Killed process {pid} using port {local_port}")
+                        except Exception:
+                            pass
+                    # Wait a bit for port to be released
+                    time.sleep(0.5)
+            except (subprocess.TimeoutExpired, FileNotFoundError, Exception):
+                # lsof not available or failed, just wait
+                time.sleep(1)
+    except (OSError, ConnectionRefusedError):
+        # Port is free, proceed
+        pass
+    
     # -N: no remote command
     # -L: local port forward
     # -o ExitOnForwardFailure=yes: fail fast if port bind/forward fails
@@ -71,6 +102,9 @@ def ssh_tunnel(local_port: int = LOCAL_PORT):
             proc.wait(timeout=3)
         except subprocess.TimeoutExpired:
             proc.kill()
+            proc.wait(timeout=1)  # Wait for process to fully terminate
+        # Small delay to ensure port is released
+        time.sleep(0.5)
 
 
 def main():
