@@ -80,6 +80,68 @@ class TourDate(SQLModel, table=True):
     tour: Optional[Tour] = Relationship(back_populates="dates")
 
 # -----------------------------------------------------
+# Blog Posts
+# -----------------------------------------------------
+class BlogPost(SQLModel, table=True):
+    __tablename__ = "blog_posts"
+    
+    id: Optional[int] = Field(default=None, primary_key=True)
+    title: str = Field(max_length=255)
+    content: str = Field(max_length=10000)
+    slug: str = Field(unique=True, max_length=255)
+    description: Optional[str] = None
+    keywords: Optional[str] = None
+    image: Optional[str] = None
+    reading_time_minutes: Optional[int] = None
+    created_at: Optional[datetime] = Field(default_factory=datetime.now)
+    updated_at: Optional[datetime] = Field(default_factory=datetime.now)
+    
+    def __str__(self):
+        return self.title
+
+
+# Pydantic model for creating blog posts
+class BlogPostCreate(SQLModel):
+    title: str = Field(max_length=255)
+    content: str = Field(max_length=10000)
+    slug: str = Field(max_length=255)
+    description: Optional[str] = None
+    keywords: Optional[str] = None
+    image: Optional[str] = None
+    reading_time_minutes: Optional[int] = None
+
+
+# Pydantic model for updating blog posts
+class BlogPostUpdate(SQLModel):
+    title: Optional[str] = Field(default=None, max_length=255)
+    content: Optional[str] = Field(default=None, max_length=10000)
+    slug: Optional[str] = Field(default=None, max_length=255)
+    description: Optional[str] = None
+    keywords: Optional[str] = None
+    image: Optional[str] = None
+    reading_time_minutes: Optional[int] = None
+
+
+# Pydantic model for returning blog posts via API
+class BlogPostPublic(SQLModel):
+    id: int
+    title: str
+    content: str
+    slug: str
+    description: Optional[str] = None
+    keywords: Optional[str] = None
+    image: Optional[str] = None
+    reading_time_minutes: Optional[int] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+
+class BlogPostsPublic(SQLModel):
+    data: list[BlogPostPublic]
+    count: int
+
+
+# -----------------------------------------------------
 # Site Users (Renamed from User to avoid conflict)
 # Mapped to 'users' table
 # -----------------------------------------------------

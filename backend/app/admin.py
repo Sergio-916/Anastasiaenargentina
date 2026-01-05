@@ -18,6 +18,7 @@ from app.models import (
     TourDate,
     AdminUser,
     SiteUser,
+    BlogPost,
 )
 
 
@@ -220,6 +221,34 @@ class SiteUserAdmin(ModelView, model=SiteUser):
     can_view_details = True
     can_export = True
 
+class BlogPostAdmin(ModelView, model=BlogPost):
+    """
+    Admin interface for BlogPost model.
+    Note: content, keywords, and image fields are excluded from list view
+    but available in detail/edit views.
+    """
+    column_list = [
+        BlogPost.id,
+        BlogPost.title,
+        BlogPost.slug,
+        BlogPost.description,
+        BlogPost.reading_time_minutes,
+        BlogPost.created_at,
+        BlogPost.updated_at,
+    ]
+    column_searchable_list = [BlogPost.title, BlogPost.slug, BlogPost.description]
+    column_sortable_list = [BlogPost.id, BlogPost.created_at, BlogPost.updated_at]
+    column_default_sort = [(BlogPost.created_at, True)]
+    name = "Blog Post"
+    name_plural = "Blog Posts"
+    icon = "fa-solid fa-blog"
+    category = "Content"
+    can_create = True
+    can_edit = True
+    can_delete = True
+    can_view_details = True
+    can_export = True
+
 
 def setup_admin(app, secret_key: str) -> Admin:
     """
@@ -255,6 +284,7 @@ def setup_admin(app, secret_key: str) -> Admin:
     admin.add_view(TourDateAdmin)
     admin.add_view(AdminUserAdmin)
     admin.add_view(SiteUserAdmin)
+    admin.add_view(BlogPostAdmin)
     
     return admin
 
