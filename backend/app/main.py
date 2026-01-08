@@ -21,13 +21,31 @@ if settings.SENTRY_DSN and settings.ENVIRONMENT != "local":
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    if settings.ENVIRONMENT == "local":
-        print("Starting SSH Tunnel for local development...")
-        with ssh_tunnel():
+    # Check if we need SSH tunnel (only if POSTGRES_SERVER is not localhost)
+    needs_ssh_tunnel = (
+        settings.ENVIRONMENT == "local" 
+        and settings.POSTGRES_SERVER not in ("localhost", "127.0.0.1")
+    )
+    
+    if needs_ssh_tunnel:
+        print("Starting SSH Tunnel for local development (using port 5433)...")
+        # Use port 5433 for SSH tunnel to avoid conflict with local PostgreSQL
+        with ssh_tunnel(local_port=5433):
             print("SSH Tunnel active.")
+            # Modify database connection to use SSH tunnel
+            from sqlalchemy import create_engine
+            tunnel_uri = str(settings.SQLALCHEMY_DATABASE_URI).replace(
+                f":{settings.POSTGRES_PORT}", ":5433"
+            ).replace(
+                settings.POSTGRES_SERVER, "127.0.0.1"
+            )
+            # Update the global engine to use tunnel
+            from app.core import db
+            db.engine = create_engine(tunnel_uri)
             yield
             print("SSH Tunnel closing...")
     else:
+        print("Using local database connection (no SSH tunnel needed).")
         yield
     # Shutdown
 

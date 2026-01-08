@@ -34,16 +34,31 @@ def init(db_engine: Engine) -> None:
 def main() -> None:
     logger.info("Initializing service")
     
-    # In local environment, create SSH tunnel before connecting to DB
-    if settings.ENVIRONMENT == "local":
-        logger.info("Local environment detected, creating SSH tunnel...")
-        with ssh_tunnel():
+    # Check if we need SSH tunnel (only if POSTGRES_SERVER is not localhost)
+    needs_ssh_tunnel = (
+        settings.ENVIRONMENT == "local" 
+        and settings.POSTGRES_SERVER not in ("localhost", "127.0.0.1")
+    )
+    
+    if needs_ssh_tunnel:
+        logger.info("Local environment with remote database detected, creating SSH tunnel...")
+        # Use port 5433 for SSH tunnel to avoid conflict with local PostgreSQL
+        with ssh_tunnel(local_port=5433):
             logger.info("SSH tunnel active, checking database connection...")
-            init(engine)
-        # Small delay to ensure SSH tunnel is fully closed before alembic tries to create a new one
+            # Temporarily modify engine to use SSH tunnel port
+            from sqlalchemy import create_engine
+            tunnel_uri = str(settings.SQLALCHEMY_DATABASE_URI).replace(
+                f":{settings.POSTGRES_PORT}", ":5433"
+            ).replace(
+                settings.POSTGRES_SERVER, "127.0.0.1"
+            )
+            tunnel_engine = create_engine(tunnel_uri)
+            init(tunnel_engine)
+        # Small delay to ensure SSH tunnel is fully closed
         import time
         time.sleep(1)
     else:
+        logger.info("Using local database connection...")
         init(engine)
     
     logger.info("Service finished initializing")

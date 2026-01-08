@@ -34,13 +34,13 @@ def wait_port(host: str, port: int, timeout_s: float = 5.0) -> None:
 
 @contextmanager
 def ssh_tunnel(local_port: int = LOCAL_PORT):
-    # Check if port is already in use and try to free it
+    # Check if port is already in use and try to free it (only SSH processes)
     try:
         with socket.create_connection(("127.0.0.1", local_port), timeout=0.1):
-            # Port is in use, try to find and kill the SSH process
+            # Port is in use, try to find and kill only SSH processes
             logger = logging.getLogger(__name__)
             try:
-                # Try to find SSH process using this port
+                # Try to find processes using this port
                 result = subprocess.run(
                     ["lsof", "-ti", f":{local_port}"],
                     capture_output=True,
@@ -51,8 +51,24 @@ def ssh_tunnel(local_port: int = LOCAL_PORT):
                     pids = result.stdout.strip().split('\n')
                     for pid in pids:
                         try:
-                            subprocess.run(["kill", "-9", pid], timeout=1)
-                            logger.warning(f"Killed process {pid} using port {local_port}")
+                            # Check if it's an SSH process, not PostgreSQL
+                            ps_result = subprocess.run(
+                                ["ps", "-p", pid, "-o", "comm="],
+                                capture_output=True,
+                                text=True,
+                                timeout=1
+                            )
+                            process_name = ps_result.stdout.strip().lower()
+                            # Only kill SSH processes, not PostgreSQL
+                            if "ssh" in process_name or "postgres" not in process_name:
+                                subprocess.run(["kill", "-9", pid], timeout=1)
+                                logger.warning(f"Killed process {pid} ({process_name}) using port {local_port}")
+                            else:
+                                logger.warning(f"Port {local_port} is used by {process_name} (PID {pid}), not killing it")
+                                raise RuntimeError(
+                                    f"Port {local_port} is already in use by {process_name}. "
+                                    f"Please use a different port for SSH tunnel or stop the process."
+                                )
                         except Exception:
                             pass
                     # Wait a bit for port to be released

@@ -19,6 +19,17 @@ fileConfig(config.config_file_name)
 # target_metadata = None
 
 import app.models  # noqa: F401  (важно: просто импортнуть пакет)
+# Explicitly import all table models to ensure they're registered in metadata
+from app.models import (
+    AdminUser,
+    Contact,
+    Tour,
+    TourDate,
+    BlogPost,
+    SiteUser,
+    User,
+    Item,
+)  # noqa: F401
 from sqlmodel import SQLModel
 from app.core.config import settings # noqa
 from app.ssh_util import ssh_tunnel  # noqa
@@ -64,16 +75,33 @@ def run_migrations_online():
 
     """
     configuration = config.get_section(config.config_ini_section)
-    configuration["sqlalchemy.url"] = get_url()
+    
+    # Check if we need SSH tunnel (only if POSTGRES_SERVER is not localhost)
+    needs_ssh_tunnel = (
+        settings.ENVIRONMENT == "local" 
+        and settings.POSTGRES_SERVER not in ("localhost", "127.0.0.1")
+    )
+    
+    if needs_ssh_tunnel:
+        # Use SSH tunnel on port 5433 to avoid conflict with local PostgreSQL
+        db_url = str(settings.SQLALCHEMY_DATABASE_URI).replace(
+            f":{settings.POSTGRES_PORT}", ":5433"
+        ).replace(
+            settings.POSTGRES_SERVER, "127.0.0.1"
+        )
+    else:
+        db_url = get_url()
+    
+    configuration["sqlalchemy.url"] = db_url
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
 
-    # In local environment, create SSH tunnel before connecting to DB
-    if settings.ENVIRONMENT == "local":
-        with ssh_tunnel():
+    # In local environment with remote DB, create SSH tunnel before connecting to DB
+    if needs_ssh_tunnel:
+        with ssh_tunnel(local_port=5433):
             with connectable.connect() as connection:
                 context.configure(
                     connection=connection, target_metadata=target_metadata, compare_type=True
