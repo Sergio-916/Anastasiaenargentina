@@ -1,75 +1,119 @@
 import { Box, Heading, Text, Container, Link, Button } from "@chakra-ui/react";
 import Markdown from "markdown-to-jsx";
-import getPostMetadata from "@/utils/getPostMetadata";
-import fs from "fs";
-import matter from "gray-matter";
-import React from "react";
+import { notFound } from "next/navigation";
 
-function getPostContent(slug) {
-  const folder = "public/content/";
-  const file = folder + `${slug}.md`;
-  const content = fs.readFileSync(file, "utf8");
+// Fetch blog post by slug from API
+async function fetchBlogPost(slug) {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://127.0.0.1:8000';
 
-  const matterResult = matter(content);
-  return matterResult;
+  try {
+    const res = await fetch(`${backendUrl}/api/v1/blog-posts/${slug}`, {
+      cache: 'no-store',
+    });
+
+    if (!res.ok) {
+      if (res.status === 404) {
+        return null;
+      }
+      const body = await res.text().catch(() => "");
+      throw new Error(`Failed to fetch blog post: ${res.status} ${body.slice(0, 200)}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("Error fetching blog post:", error);
+    return null;
+  }
+}
+
+// Fetch all blog posts for static params generation
+async function fetchAllBlogPosts() {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://127.0.0.1:8000';
+
+  try {
+    const res = await fetch(`${backendUrl}/api/v1/blog-posts/?limit=1000`, {
+      cache: 'no-store',
+    });
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new Error(`Failed to fetch blog posts: ${res.status} ${body.slice(0, 200)}`);
+    }
+
+    const data = await res.json();
+    return data.data || [];
+  } catch (error) {
+    console.error("Error fetching blog posts:", error);
+    return [];
+  }
 }
 
 export const generateStaticParams = async () => {
-  const posts = getPostMetadata("public/content");
+  const posts = await fetchAllBlogPosts();
   return posts.map((post) => ({ slug: post.slug }));
 };
 
-export async function generateMetadata({ params, searchParams }) {
-  const id = params?.slug ? " - " + params?.slug : "";
+export async function generateMetadata({ params }) {
+  const { slug } = params;
+  const post = await fetchBlogPost(slug);
+
+  if (!post) {
+    return {
+      title: "Пост не найден - Блог Анастасии Шимук",
+      description: "Запрошенный пост не существует.",
+    };
+  }
+
   return {
-    title: `Блог Анастасии Шимук ${id.replaceAll("_", " ")}`,
+    title: `${post.title} - Блог Анастасии Шимук`,
+    description: post.description || post.title,
   };
 }
 
-export default function RecipePage(props) {
-  const slug = props.params.slug;
-  const post = getPostContent(slug);
-  // console.log(post);
+export default async function BlogPostPage({ params }) {
+  const { slug } = params;
+  const post = await fetchBlogPost(slug);
+
+  if (!post) {
+    notFound();
+  }
+
   return (
     <main>
       <Container maxW="container.xl">
         <article>
           <Box px={[0, 6, 10, 20]} pt={5} pb={15}>
-            <Markdown
-              options={{
-                overrides: {
-                  h1: {
-                    component: Heading,
-                    props: { as: "h1", size: "xl", mb: 4 },
-                  },
-                  h2: {
-                    component: Heading,
-                    props: { as: "h2", size: "lg", mb: 3 },
-                  },
-                  h3: {
-                    component: Heading,
-                    props: { as: "h3", size: "md", mb: 2 },
-                  },
-                  h4: {
-                    component: Heading,
-                    props: { as: "h4", size: "sm", mb: 2 },
-                  },
-                  p: {
-                    component: Text,
-                    props: { mb: 4, lineHeight: "taller" },
-                  },
-                  a: {
-                    component: Link,
-                    props: {
-                      color: "blue.700", // Цвет ссылки
-                      isExternal: true, // Если ссылки должны открываться в новом окне
-                    },
-                  },
+            {post.title && (
+              <Heading as="h2" size="lg" mb={4}>
+                {post.title}
+              </Heading>
+            )}
+
+            {post.reading_time_minutes && (
+              <Text fontSize="sm" color="gray.500" mb={4}>
+                Время прочтения: {post.reading_time_minutes} мин
+              </Text>
+            )}
+            <Box
+              mt={4}
+              sx={{
+                "& img": {
+                  maxW: "100%",
+                  height: "auto",
+                  borderRadius: "md",
+                  my: 4
                 },
+                "& p": {
+                  mb: 4,
+                  lineHeight: "tall"
+                },
+                "& ul": {
+                  ml: 6,
+                  mb: 4
+                }
               }}
-            >
-              {post.content}
-            </Markdown>
+              dangerouslySetInnerHTML={{ __html: post.content }}
+            />
             <Link href="/blog">
               <Button m={3} colorScheme="teal" size={["sm", null, "md", "lg"]}>
                 &lt; Назад

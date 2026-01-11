@@ -87,7 +87,7 @@ class BlogPost(SQLModel, table=True):
     
     id: Optional[int] = Field(default=None, primary_key=True)
     title: str = Field(max_length=255)
-    content: str = Field(max_length=10000)
+    content: str  # Removed max_length to support HTML with Base64 images
     slug: str = Field(unique=True, max_length=255)
     description: Optional[str] = None
     keywords: Optional[str] = None
@@ -103,7 +103,7 @@ class BlogPost(SQLModel, table=True):
 # Pydantic model for creating blog posts
 class BlogPostCreate(SQLModel):
     title: str = Field(max_length=255)
-    content: str = Field(max_length=10000)
+    content: str  # Removed max_length to support HTML with Base64 images
     slug: str = Field(max_length=255)
     description: Optional[str] = None
     keywords: Optional[str] = None
@@ -114,7 +114,7 @@ class BlogPostCreate(SQLModel):
 # Pydantic model for updating blog posts
 class BlogPostUpdate(SQLModel):
     title: Optional[str] = Field(default=None, max_length=255)
-    content: Optional[str] = Field(default=None, max_length=10000)
+    content: Optional[str] = None  # Removed max_length to support HTML with Base64 images
     slug: Optional[str] = Field(default=None, max_length=255)
     description: Optional[str] = None
     keywords: Optional[str] = None
