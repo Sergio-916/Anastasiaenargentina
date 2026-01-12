@@ -5,14 +5,15 @@ Script to parse .doc and .docx files from backend/data folder and save them as b
 This script:
 1. Scans backend/data folder for .doc and .docx files
 2. Extracts text and images from each document
-3. Saves images to backend/data/pictures subfolder
+3. Converts documents to HTML with embedded Base64 images
 4. Creates BlogPost records in the database
 
 Usage:
-    python scripts/import_docx_blog_posts.py [--force] [--dry-run]
+    python scripts/import_docx_blog_posts.py [--force] [--dry-run] [--production] [--data-dir PATH]
     
 By default, files that already exist in database (by slug) are skipped.
 Use --force to re-process existing files.
+Use --production to connect directly to production database (skip SSH tunnel).
 """
 import base64
 import hashlib
@@ -59,6 +60,11 @@ def parse_args():
         default=None,
         help="Path to data directory (default: backend/data)",
     )
+    parser.add_argument(
+        "--production",
+        action="store_true",
+        help="Use production database connection (skip SSH tunnel, use direct connection)",
+    )
     return parser.parse_args()
 
 
@@ -104,28 +110,32 @@ def transliterate(text: str) -> str:
     Transliterate Russian (Cyrillic) text to English (Latin) characters.
     Uses standard transliteration mapping.
     """
-    # Russian to English transliteration map
-    translit_map = {
-        'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo',
-        'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
-        'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
-        'ф': 'f', 'х': 'h', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'sch',
-        'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya',
-        'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'Yo',
-        'Ж': 'Zh', 'З': 'Z', 'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M',
-        'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U',
-        'Ф': 'F', 'Х': 'H', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Sch',
-        'Ъ': '', 'Ы': 'Y', 'Ь': '', 'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya',
+    # Multi-character transliteration (must be done first)
+    multi_char_replacements = {
+        'ё': 'yo', 'ж': 'zh', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'sch',
+        'ю': 'yu', 'я': 'ya',
+        'Ё': 'Yo', 'Ж': 'Zh', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Sch',
+        'Ю': 'Yu', 'Я': 'Ya',
     }
     
-    result = []
-    for char in text:
-        if char in translit_map:
-            result.append(translit_map[char])
-        else:
-            result.append(char)
+    # Single character transliteration using str.translate() (more efficient)
+    single_char_translation = str.maketrans({
+        'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e',
+        'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
+        'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
+        'ф': 'f', 'х': 'h', 'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e',
+        'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E',
+        'З': 'Z', 'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M',
+        'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U',
+        'Ф': 'F', 'Х': 'H', 'Ъ': '', 'Ы': 'Y', 'Ь': '', 'Э': 'E',
+    })
     
-    return ''.join(result)
+    # Apply multi-character replacements first, then single character translation
+    result = text
+    for cyrillic, latin in multi_char_replacements.items():
+        result = result.replace(cyrillic, latin)
+    
+    return result.translate(single_char_translation)
 
 
 def generate_slug(filename: str) -> str:
@@ -343,10 +353,22 @@ def main():
     doc_files = docx_files  # Only process .docx files
 
     # Check if we need SSH tunnel
-    needs_ssh_tunnel = (
-        settings.ENVIRONMENT == "local"
-        and settings.POSTGRES_SERVER not in ("localhost", "127.0.0.1")
-    )
+    # Skip SSH tunnel if --production flag is set or if we're already in production/staging
+    if args.production:
+        needs_ssh_tunnel = False
+        print("⚠ Production mode: Using direct database connection (no SSH tunnel)")
+        print(f"   Connecting to: {settings.POSTGRES_SERVER}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}")
+        if not args.dry_run:
+            print("   ⚠ WARNING: This will write to production database!")
+            response = input("   Continue? (yes/no): ")
+            if response.lower() not in ("yes", "y"):
+                print("   Aborted.")
+                sys.exit(0)
+    else:
+        needs_ssh_tunnel = (
+            settings.ENVIRONMENT == "local"
+            and settings.POSTGRES_SERVER not in ("localhost", "127.0.0.1")
+        )
 
     def process_files(engine):
         """Process files with given database engine."""
