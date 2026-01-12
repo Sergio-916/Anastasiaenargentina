@@ -64,4 +64,5 @@ RUN mkdir -p /app/app/email-templates/build \
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync
 
-CMD ["fastapi", "run", "--workers", "4", "app/main.py"]
+# Use start.sh which runs prestart.sh (migrations) before starting the server
+CMD ["bash", "scripts/start.sh"]
