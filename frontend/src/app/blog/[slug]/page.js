@@ -1,5 +1,5 @@
 import { Box, Heading, Text, Container, Link, Button } from "@chakra-ui/react";
-import Markdown from "markdown-to-jsx";
+import NextLink from "next/link";
 import { notFound } from "next/navigation";
 
 // Force dynamic rendering for this page
@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 // Fetch blog post by slug from API
 async function fetchBlogPost(slug) {
-  const backendUrl = process.env.BACKEND_URL || "http://anastasia_backend:8000";
+  const backendUrl = process.env.ENVIRONMENT == "production" ? process.env.BACKEND_URL : "http://localhost:8000";
 
   try {
     const res = await fetch(`${backendUrl}/api/v1/blog-posts/${slug}`, {
@@ -117,8 +117,25 @@ export default async function BlogPostPage({ params }) {
               }}
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
+
+            <Text my={5}>
+              👉Эту и другие статьи вы можете найти в нашем{" "}
+              <Link
+                as={NextLink}
+                style={{
+                  color: "#004D40",
+                  fontStyle: "bold",
+                  textDecoration: "underline",
+                }}
+                target="_blank"
+                href="https://t.me/laciudadcomomuseo"
+              >
+                Telegram канале
+              </Link>{" "}
+
+            </Text>
             <Link href="/blog">
-              <Button m={3} colorScheme="teal" size={["sm", null, "md", "lg"]}>
+              <Button m={3} colorScheme="teal" size={["sm", null, "md", "md"]}>
                 &lt; Назад
               </Button>
             </Link>

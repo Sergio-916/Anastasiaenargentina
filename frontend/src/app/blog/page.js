@@ -13,7 +13,8 @@ export const metadata = {
 };
 
 async function fetchBlogPosts() {
-  const backendUrl = process.env.BACKEND_URL || "http://anastasia_backend:8000";
+  const backendUrl = process.env.ENVIRONMENT == "production" ? process.env.BACKEND_URL : "http://localhost:8000";
+
   
   try {
     const res = await fetch(`${backendUrl}/api/v1/blog-posts/`, {
