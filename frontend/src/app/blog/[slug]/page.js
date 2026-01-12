@@ -2,9 +2,12 @@ import { Box, Heading, Text, Container, Link, Button } from "@chakra-ui/react";
 import Markdown from "markdown-to-jsx";
 import { notFound } from "next/navigation";
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
+
 // Fetch blog post by slug from API
 async function fetchBlogPost(slug) {
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://127.0.0.1:8000';
+  const backendUrl = process.env.BACKEND_URL || "http://anastasia_backend:8000";
 
   try {
     const res = await fetch(`${backendUrl}/api/v1/blog-posts/${slug}`, {
@@ -28,7 +31,7 @@ async function fetchBlogPost(slug) {
 
 // Fetch all blog posts for static params generation
 async function fetchAllBlogPosts() {
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://127.0.0.1:8000';
+  const backendUrl = process.env.BACKEND_URL || "http://anastasia_backend:8000";
 
   try {
     const res = await fetch(`${backendUrl}/api/v1/blog-posts/?limit=1000`, {

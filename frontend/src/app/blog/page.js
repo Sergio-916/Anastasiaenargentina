@@ -4,13 +4,16 @@ import {
 } from "@chakra-ui/react";
 import SearchView from "../components/SearchView";
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: "Блог Анастасии Шимук",
   description: "Анастасия Шимук - гид по Аргентине, гид по Буэнос Айресу",
 };
 
 async function fetchBlogPosts() {
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://127.0.0.1:8000';
+  const backendUrl = process.env.BACKEND_URL || "http://anastasia_backend:8000";
   
   try {
     const res = await fetch(`${backendUrl}/api/v1/blog-posts/`, {

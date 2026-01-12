@@ -1,7 +1,9 @@
 import sentry_sdk
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
+from starlette.formparsers import MultiPartParser
+from starlette.requests import Request as StarletteRequest
 
 from app.api.main import api_router
 from app.core.config import settings
@@ -10,6 +12,24 @@ from app.admin import setup_admin
 
 from contextlib import asynccontextmanager
 from app.ssh_util import ssh_tunnel
+
+# Increase max_part_size for multipart forms globally
+# This allows larger content (e.g., HTML with Base64 images) in admin panel
+# Default is 1024KB, we increase it to 50MB
+# Store original form method
+_original_form = StarletteRequest.form
+
+async def _custom_form(self: StarletteRequest):
+    """Custom form method with increased max_part_size."""
+    parser = MultiPartParser(
+        headers=self.headers,
+        stream=self.stream(),
+        max_part_size=50 * 1024 * 1024  # 50MB instead of default 1MB
+    )
+    return await parser.parse()
+
+# Monkey-patch Request.form to use increased limit
+StarletteRequest.form = _custom_form
 
 def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"

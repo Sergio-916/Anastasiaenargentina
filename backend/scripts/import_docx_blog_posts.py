@@ -14,9 +14,11 @@ Usage:
 By default, files that already exist in database (by slug) are skipped.
 Use --force to re-process existing files.
 Use --production to connect directly to production database (skip SSH tunnel).
+Database connection uses settings from .env file via config.py (same as other parts of the app).
 """
 import base64
 import hashlib
+import os
 import re
 import sys
 import uuid
@@ -24,13 +26,49 @@ from pathlib import Path
 from datetime import datetime
 from typing import Optional
 import mammoth
-from sqlalchemy import create_engine
 from sqlmodel import Session, select
 
 # Add backend directory to sys.path
 _script_dir = Path(__file__).parent
 _backend_dir = _script_dir.parent
 sys.path.insert(0, str(_backend_dir))
+
+# Parse arguments first to check if --production is used
+# This allows us to set ENVIRONMENT before importing settings
+def _parse_args_early():
+    """Parse arguments early to set ENVIRONMENT if needed."""
+    import argparse
+    parser = argparse.ArgumentParser(add_help=False)  # Don't show help on early parse
+    parser.add_argument("--production", action="store_true")
+    args, _ = parser.parse_known_args()
+    return args
+
+_early_args = _parse_args_early()
+# If --production is used, set ENVIRONMENT=production before importing settings
+# This ensures settings uses production environment (same approach as other parts of app)
+if _early_args.production:
+    os.environ["ENVIRONMENT"] = "production"
+    # Load .env file to read POSTGRES_URL if it's not already in environment
+    # This allows using production DB settings from POSTGRES_URL in .env
+    from dotenv import load_dotenv
+    env_file_path = _backend_dir.parent / ".env"
+    if env_file_path.exists():
+        load_dotenv(env_file_path)
+    
+    postgres_url = os.getenv("POSTGRES_URL")
+    if postgres_url:
+        # Parse POSTGRES_URL to extract connection parameters
+        # Format: postgresql://user:password@host:port/dbname
+        import re
+        match = re.match(r'postgresql://([^:]+):([^@]+)@([^:]+):(\d+)/(.+)', postgres_url)
+        if match:
+            user, password, host, port, dbname = match.groups()
+            # Set individual environment variables (Pydantic Settings will use them)
+            os.environ["POSTGRES_USER"] = user
+            os.environ["POSTGRES_PASSWORD"] = password
+            os.environ["POSTGRES_SERVER"] = host
+            os.environ["POSTGRES_PORT"] = port
+            os.environ["POSTGRES_DB"] = dbname
 
 from app.core.config import settings
 from app.models import BlogPost
@@ -63,7 +101,7 @@ def parse_args():
     parser.add_argument(
         "--production",
         action="store_true",
-        help="Use production database connection (skip SSH tunnel, use direct connection)",
+        help="Use production database connection (skip SSH tunnel, use direct connection from settings)",
     )
     return parser.parse_args()
 
@@ -353,11 +391,13 @@ def main():
     doc_files = docx_files  # Only process .docx files
 
     # Check if we need SSH tunnel
-    # Skip SSH tunnel if --production flag is set or if we're already in production/staging
+    # Same logic as in app/main.py, app/backend_pre_start.py, app/alembic/env.py
+    # Skip SSH tunnel if --production flag is set (same as when ENVIRONMENT != "local")
     if args.production:
         needs_ssh_tunnel = False
         print("⚠ Production mode: Using direct database connection (no SSH tunnel)")
         print(f"   Connecting to: {settings.POSTGRES_SERVER}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}")
+        print(f"   Environment: {settings.ENVIRONMENT}")
         if not args.dry_run:
             print("   ⚠ WARNING: This will write to production database!")
             response = input("   Continue? (yes/no): ")
@@ -365,6 +405,10 @@ def main():
                 print("   Aborted.")
                 sys.exit(0)
     else:
+        # In non-production mode, use SSH tunnel only if:
+        # - Environment is local AND
+        # - POSTGRES_SERVER is not localhost (meaning it's a remote server)
+        # Same logic as in app/main.py, app/backend_pre_start.py, app/alembic/env.py
         needs_ssh_tunnel = (
             settings.ENVIRONMENT == "local"
             and settings.POSTGRES_SERVER not in ("localhost", "127.0.0.1")
@@ -372,7 +416,80 @@ def main():
 
     def process_files(engine):
         """Process files with given database engine."""
+        # Test connection before processing files
+        try:
+            from sqlalchemy import text
+            test_conn = engine.connect()
+            test_conn.close()
+        except Exception as e:
+            error_msg = str(e)
+            # Check if it's a host resolution error
+            if "failed to resolve host" in error_msg.lower() or "nodename nor servname provided" in error_msg.lower():
+                # Extract hostname from engine URL
+                engine_url = str(engine.url) if hasattr(engine, 'url') else str(engine)
+                import re as re_module
+                host_match = re_module.search(r'@([^:]+):', engine_url)
+                hostname = host_match.group(1) if host_match else "unknown"
+                
+                print(f"\n✗ Error: Cannot resolve database host '{hostname}'")
+                print(f"\n  This usually means:")
+                if hostname in ("db", "postgres", "database"):
+                    print(f"    - You're running the script locally, but '{hostname}' is a Docker container name")
+                    print(f"    - Docker container names only work inside Docker networks")
+                    print(f"\n  Trying to use SSH tunnel to connect to production database...")
+                    # Use SSH tunnel from ssh_util.py (same as other parts of the app)
+                    try:
+                        with ssh_tunnel(local_port=5433):
+                            print("  ✓ SSH tunnel active, connecting...")
+                            # Modify URI to use SSH tunnel (same approach as app/main.py)
+                            # Replace port first, then host (order matters to avoid partial matches)
+                            tunnel_uri = str(settings.SQLALCHEMY_DATABASE_URI).replace(
+                                f":{settings.POSTGRES_PORT}", ":5433"
+                            ).replace(
+                                f"@{settings.POSTGRES_SERVER}:", "@127.0.0.1:"
+                            )
+                            from sqlalchemy import create_engine
+                            tunnel_engine = create_engine(tunnel_uri)
+                            # Retry with tunnel
+                            return process_files(tunnel_engine)
+                    except Exception as tunnel_error:
+                        print(f"  ✗ SSH tunnel failed: {tunnel_error}")
+                        print(f"\n  Solutions:")
+                        print(f"    1. Run the script inside Docker container:")
+                        print(f"       docker compose exec backend uv run scripts/import_docx_blog_posts.py --production")
+                        print(f"    2. Update POSTGRES_SERVER in .env file to 'localhost' for local development")
+                        print(f"    3. Check SSH connection to production server")
+                        sys.exit(1)
+                else:
+                    print(f"    - The host '{hostname}' is not accessible from your current location")
+                    print(f"    - Check network connectivity and firewall settings")
+                    print(f"    - Verify the hostname is correct")
+                sys.exit(1)
+            else:
+                print(f"\n✗ Error: Failed to connect to database: {e}")
+                print(f"\n  Please check:")
+                print(f"    - Database server is running")
+                print(f"    - Connection settings are correct")
+                print(f"    - Network connectivity")
+                sys.exit(1)
+        
         with Session(engine) as session:
+            # Verify connection and show database info
+            try:
+                from sqlalchemy import text
+                # Check connection and count existing posts
+                result = session.exec(text("SELECT COUNT(*) FROM blog_posts")).first()
+                total_posts = result if result is not None else 0
+                print(f"\n✓ Connected to database successfully")
+                print(f"  Current blog posts in database: {total_posts}")
+                
+                # Show database name if possible
+                db_name_result = session.exec(text("SELECT current_database()")).first()
+                if db_name_result:
+                    print(f"  Database name: {db_name_result}")
+            except Exception as e:
+                print(f"  ⚠ Warning: Could not verify database connection: {e}")
+            
             for doc_file in doc_files:
                 print(f"\nProcessing: {doc_file.name}")
                 try:
@@ -405,17 +522,25 @@ def main():
                     traceback.print_exc()
                     continue
 
+    # Use same approach as app/main.py, app/backend_pre_start.py, app/alembic/env.py
     if needs_ssh_tunnel:
         print("Local environment with remote database detected, creating SSH tunnel...")
         with ssh_tunnel(local_port=5433):
             print("SSH tunnel active, processing files...")
+            # Same tunnel URI modification as in app/main.py
+            from sqlalchemy import create_engine
             tunnel_uri = str(settings.SQLALCHEMY_DATABASE_URI).replace(
                 f":{settings.POSTGRES_PORT}", ":5433"
             ).replace(settings.POSTGRES_SERVER, "127.0.0.1")
             tunnel_engine = create_engine(tunnel_uri)
             process_files(tunnel_engine)
     else:
+        # Use direct connection - same as app/core/db.py and other parts of the app
         print("Using direct database connection...")
+        if not args.production:
+            print(f"   Connecting to: {settings.POSTGRES_SERVER}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}")
+            print(f"   Environment: {settings.ENVIRONMENT}")
+        # Use engine from app.core.db (same as check_db.py and other scripts)
         from app.core.db import engine
         process_files(engine)
 
