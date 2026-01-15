@@ -13,7 +13,8 @@ export const dynamic = 'force-dynamic';
 
 // Fetch tour by slug and date_id
 async function fetchTour(slug, date_id) {
-  const backendUrl = process.env.BACKEND_URL || "http://anastasia_backend:8000";
+  // Use same logic as group-tours/page.js for consistency
+  const backendUrl = process.env.ENVIRONMENT == "production" ? process.env.BACKEND_URL : "http://localhost:8000";
   const res = await fetch(`${backendUrl}/api/v1/tours/${slug}/${date_id}`, {
     cache: 'no-store',
   });

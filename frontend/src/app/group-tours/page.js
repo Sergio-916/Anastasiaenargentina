@@ -61,7 +61,7 @@ const filteredTours = scheduledTours.filter((tour) => {
   });
 
 
-  if (!filteredTours.name) {
+  if (filteredTours.length === 0) {
     return <NoGroupTours />;
   } 
 

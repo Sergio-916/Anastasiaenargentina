@@ -21,6 +21,16 @@ _original_form = StarletteRequest.form
 
 async def _custom_form(self: StarletteRequest):
     """Custom form method with increased max_part_size."""
+    # Only parse form data for POST/PUT/PATCH requests with Content-Type header
+    if self.method not in ("POST", "PUT", "PATCH"):
+        return await _original_form(self)
+    
+    # Check if Content-Type header exists
+    content_type = self.headers.get("Content-Type", "")
+    if not content_type or "multipart/form-data" not in content_type:
+        return await _original_form(self)
+    
+    # Parse multipart form with increased size limit
     parser = MultiPartParser(
         headers=self.headers,
         stream=self.stream(),
