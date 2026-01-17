@@ -50,8 +50,7 @@ export default async function Blog() {
   return (
     <Container maxW="container.xl" minH="70vh">
       <Text m={5} fontSize={["md", "lg", "xl"]} textAlign="center">
-        В блоге я делюсь своим опытом жизни в Буэнос Айресе и инетерсными
-        поездками, где я расскажываю много полезной информации для путешествий
+        В блоге я делюсь своим опытом гида в Буэнос Айресе, где я рассказываю много полезной информации о стране и ее культуре.
       </Text>
 
       <SearchView postMetadata={postMetadata} />

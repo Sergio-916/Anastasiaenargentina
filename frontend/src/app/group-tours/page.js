@@ -17,9 +17,9 @@ export const metadata = {
 
 export default async function GroupToursPage() {
   // ✅ baseUrl from request headers (works on VPS behind reverse proxy)
-  const backendUrl = process.env.ENVIRONMENT == "production" ? process.env.BACKEND_URL : "http://localhost:8000";
+  const backendUrl = process.env.ENVIRONMENT == "production" ? process.env.BACKEND_URL : "http://127.0.0.1:8000";
+  console.log("env" , {backendUrl})
   const res = await fetch(`${backendUrl}/api/v1/tours/`, { cache: "no-store" });
-
   if (!res.ok) {
     const body = await res.text().catch(() => "");
     throw new Error(`Failed to fetch tours: ${res.status}. ${body.slice(0, 200)}`);
