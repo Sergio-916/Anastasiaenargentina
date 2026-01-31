@@ -17,6 +17,7 @@ Use --production to connect directly to production database (skip SSH tunnel).
 Database connection uses settings from .env file via config.py (same as other parts of the app).
 """
 import base64
+import io
 import hashlib
 import os
 import re
@@ -25,8 +26,15 @@ import uuid
 from pathlib import Path
 from datetime import datetime
 from typing import Optional
+
 import mammoth
+from mammoth.images import img_element
+from PIL import Image
 from sqlmodel import Session, select
+
+# Web display: max dimension and JPEG quality for embedded images
+MAX_IMAGE_PIXELS = 1200
+JPEG_QUALITY = 82
 
 # Add backend directory to sys.path
 _script_dir = Path(__file__).parent
@@ -106,20 +114,56 @@ def parse_args():
     return parser.parse_args()
 
 
+def _compress_image_for_web(image_bytes: bytes, content_type: str) -> tuple[bytes, str]:
+    """
+    Resize and compress image to web size.
+    Returns (jpeg_bytes, "image/jpeg"). Falls back to original if not a raster image.
+    """
+    try:
+        img = Image.open(io.BytesIO(image_bytes))
+    except OSError:
+        return image_bytes, content_type
+    if img.mode in ("RGBA", "P"):
+        img = img.convert("RGB")
+    elif img.mode != "RGB":
+        img = img.convert("RGB")
+    w, h = img.size
+    if max(w, h) > MAX_IMAGE_PIXELS:
+        img.thumbnail((MAX_IMAGE_PIXELS, MAX_IMAGE_PIXELS), Image.Resampling.LANCZOS)
+    out = io.BytesIO()
+    img.save(out, format="JPEG", quality=JPEG_QUALITY, optimize=True)
+    return out.getvalue(), "image/jpeg"
+
+
+@img_element
+def _convert_image_to_data_uri(image) -> dict:
+    """
+    Custom mammoth image converter: same as data_uri but compresses to web size.
+    """
+    with image.open() as f:
+        raw = f.read()
+    try:
+        compressed, content_type = _compress_image_for_web(raw, image.content_type)
+        b64 = base64.b64encode(compressed).decode("ascii")
+    except Exception:
+        b64 = base64.b64encode(raw).decode("ascii")
+        content_type = image.content_type
+    return {"src": f"data:{content_type};base64,{b64}"}
+
+
 def convert_docx_to_html_with_images(
     file_path: Path, data_dir: Path
 ) -> tuple[str, list[str]]:
     """
     Convert docx file to HTML using mammoth, embedding images as Base64 data URIs.
-    Images are embedded directly in HTML, no need to save them separately.
+    Images are resized and compressed for web (max 1200px, JPEG quality 82).
     Returns tuple of (html_content, empty list - images are in HTML).
     """
-    # Convert docx to HTML using mammoth with data_uri converter (embeds images as base64)
+    # Convert docx to HTML using mammoth with custom converter (embeds images as base64, compressed for web)
     with open(file_path, "rb") as docx_file:
-        # Use mammoth's built-in data_uri converter to embed images as base64
         result = mammoth.convert_to_html(
             docx_file,
-            convert_image=mammoth.images.data_uri
+            convert_image=_convert_image_to_data_uri,
         )
         html_content = result.value
         

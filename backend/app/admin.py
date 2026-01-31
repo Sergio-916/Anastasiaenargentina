@@ -231,7 +231,7 @@ class BlogPostAdmin(ModelView, model=BlogPost):
         BlogPost.id,
         BlogPost.title,
         BlogPost.slug,
-        BlogPost.description,
+        # BlogPost.description,
         BlogPost.reading_time_minutes,
         BlogPost.created_at,
         BlogPost.updated_at,
@@ -248,6 +248,12 @@ class BlogPostAdmin(ModelView, model=BlogPost):
     can_delete = True
     can_view_details = True
     can_export = True
+    column_formatters = {
+    BlogPost.title: lambda model, attr: (model.title[:60] + "...") if model.title and len(model.title) > 50 else (model.title or ""),
+    BlogPost.slug: lambda model, attr: (model.slug[:30] + "...") if model.slug and len(model.slug) > 50 else (model.slug or ""),
+    BlogPost.created_at: lambda model, attr: model.created_at.strftime("%Y-%m-%d %H:%M:%S") if model.created_at else "",
+    BlogPost.updated_at: lambda model, attr: model.updated_at.strftime("%Y-%m-%d %H:%M:%S") if model.updated_at else "",
+}
 
 
 def setup_admin(app, secret_key: str) -> Admin:
