@@ -14,6 +14,7 @@ coverage/
 out/
 
 /backend/data
+/backend/app/data
 
 # production
 build/
@@ -44,3 +45,4 @@ src/generated/prisma
 
 # backup
 backup/
+
