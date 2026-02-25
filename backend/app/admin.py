@@ -19,6 +19,7 @@ from app.models import (
     AdminUser,
     SiteUser,
     BlogPost,
+    OAuthAccount,
 )
 
 
@@ -86,7 +87,14 @@ class UserAdmin(ModelView, model=User):
     """
     Admin interface for User model.
     """
-    column_list = [User.id, User.email, User.full_name, User.is_active, User.is_superuser]
+    column_list = [
+        User.id,
+        User.email,
+        User.full_name,
+        User.image,
+        User.is_active,
+        User.is_superuser,
+    ]
     column_searchable_list = [User.email, User.full_name]
     column_sortable_list = [User.id, User.email, User.is_active, User.is_superuser]
     column_default_sort = [(User.id, True)]
@@ -256,6 +264,28 @@ class BlogPostAdmin(ModelView, model=BlogPost):
 }
 
 
+class OAuthAccountAdmin(ModelView, model=OAuthAccount):
+    """
+    Admin interface for OAuthAccount model.
+    """
+    column_list = [
+        OAuthAccount.id,
+        OAuthAccount.user_id,
+        OAuthAccount.provider,
+        OAuthAccount.provider_user_id,
+    ]
+    column_searchable_list = [OAuthAccount.provider, OAuthAccount.provider_user_id]
+    column_sortable_list = [OAuthAccount.provider]
+    name = "OAuth Account"
+    name_plural = "OAuth Accounts"
+    icon = "fa-solid fa-key"
+    category = "Accounts"
+    can_create = False
+    can_edit = True
+    can_delete = True
+    can_view_details = True
+
+
 def setup_admin(app, secret_key: str) -> Admin:
     """
     Setup SQLAdmin with authentication and all model views.
@@ -290,7 +320,8 @@ def setup_admin(app, secret_key: str) -> Admin:
     admin.add_view(TourDateAdmin)
     admin.add_view(AdminUserAdmin)
     admin.add_view(SiteUserAdmin)
+    admin.add_view(OAuthAccountAdmin)
     admin.add_view(BlogPostAdmin)
-    
+
     return admin
 

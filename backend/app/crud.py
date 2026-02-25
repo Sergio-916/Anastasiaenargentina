@@ -1,15 +1,41 @@
 import uuid
+from datetime import datetime
 from typing import Any
 
 from sqlmodel import Session, select
 
 from app.core.security import get_password_hash, verify_password
-from app.models import Item, ItemCreate, User, UserCreate, UserUpdate, AdminUser
+from app.models import (
+    Item,
+    ItemCreate,
+    OAuthAccount,
+    User,
+    UserCreate,
+    UserUpdate,
+    AdminUser,
+)
 
 
 def create_user(*, session: Session, user_create: UserCreate) -> User:
     db_obj = User.model_validate(
         user_create, update={"hashed_password": get_password_hash(user_create.password)}
+    )
+    session.add(db_obj)
+    session.commit()
+    session.refresh(db_obj)
+    return db_obj
+
+
+def create_user_for_signup(
+    *, session: Session, user_create: UserCreate, is_active: bool = False
+) -> User:
+    """Create user, optionally inactive for email verification flow."""
+    db_obj = User.model_validate(
+        user_create,
+        update={
+            "hashed_password": get_password_hash(user_create.password),
+            "is_active": is_active,
+        },
     )
     session.add(db_obj)
     session.commit()
@@ -92,9 +118,131 @@ def authenticate(*, session: Session, email: str, password: str) -> User | None:
     db_user = get_user_by_email(session=session, email=email)
     if not db_user:
         return None
+    # OAuth-only users have no password
+    if not db_user.hashed_password:
+        return None
     if not verify_password(password, db_user.hashed_password):
         return None
     return db_user
+
+
+def get_oauth_account(
+    *,
+    session: Session,
+    provider: str,
+    provider_user_id: str,
+) -> OAuthAccount | None:
+    """Get OAuth account by provider and provider user id."""
+    statement = select(OAuthAccount).where(
+        OAuthAccount.provider == provider,
+        OAuthAccount.provider_user_id == provider_user_id,
+    )
+    return session.exec(statement).first()
+
+
+def create_oauth_account(
+    *,
+    session: Session,
+    user_id: uuid.UUID,
+    provider: str,
+    provider_user_id: str,
+    access_token: str | None = None,
+    refresh_token: str | None = None,
+    expires_at: datetime | None = None,
+) -> OAuthAccount:
+    """Create OAuth account linking user to provider."""
+    oauth_account = OAuthAccount(
+        user_id=user_id,
+        provider=provider,
+        provider_user_id=provider_user_id,
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expires_at=expires_at,
+    )
+    session.add(oauth_account)
+    session.commit()
+    session.refresh(oauth_account)
+    return oauth_account
+
+
+def get_or_create_user_from_google(
+    *,
+    session: Session,
+    email: str,
+    full_name: str | None,
+    image: str | None,
+    provider_user_id: str,
+    access_token: str | None = None,
+    refresh_token: str | None = None,
+    expires_at: datetime | None = None,
+) -> User:
+    """
+    Get or create User from Google OAuth userinfo.
+    If user exists (by email or OAuth account), update and return.
+    Otherwise create new user and OAuth account.
+    """
+    # Check for existing OAuth account
+    oauth_account = get_oauth_account(
+        session=session,
+        provider="google",
+        provider_user_id=provider_user_id,
+    )
+    if oauth_account:
+        user = session.get(User, oauth_account.user_id)
+        if user:
+            user.full_name = full_name or user.full_name
+            user.image = image or user.image
+            oauth_account.access_token = access_token or oauth_account.access_token
+            oauth_account.refresh_token = refresh_token or oauth_account.refresh_token
+            oauth_account.expires_at = expires_at or oauth_account.expires_at
+            session.add(user)
+            session.add(oauth_account)
+            session.commit()
+            session.refresh(user)
+            return user
+
+    # Check for existing user by email (link OAuth to existing account)
+    user = get_user_by_email(session=session, email=email)
+    if user:
+        create_oauth_account(
+            session=session,
+            user_id=user.id,
+            provider="google",
+            provider_user_id=provider_user_id,
+            access_token=access_token,
+            refresh_token=refresh_token,
+            expires_at=expires_at,
+        )
+        user.full_name = full_name or user.full_name
+        user.image = image or user.image
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+        return user
+
+    # Create new user
+    new_user = User(
+        email=email,
+        full_name=full_name,
+        image=image,
+        hashed_password=None,
+        is_active=True,
+        is_superuser=False,
+    )
+    session.add(new_user)
+    session.commit()
+    session.refresh(new_user)
+
+    create_oauth_account(
+        session=session,
+        user_id=new_user.id,
+        provider="google",
+        provider_user_id=provider_user_id,
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expires_at=expires_at,
+    )
+    return new_user
 
 
 def create_item(*, session: Session, item_in: ItemCreate, owner_id: uuid.UUID) -> Item:

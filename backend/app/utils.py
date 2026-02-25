@@ -188,3 +188,46 @@ def verify_password_reset_token(token: str) -> str | None:
         return str(decoded_token["sub"])
     except InvalidTokenError:
         return None
+
+
+def generate_email_verification_token(email: str) -> str:
+    """Generate JWT token for email verification (same expiry as password reset)."""
+    delta = timedelta(hours=settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS)
+    now = datetime.now(timezone.utc)
+    expires = now + delta
+    exp = expires.timestamp()
+    encoded_jwt = jwt.encode(
+        {"exp": exp, "nbf": now, "sub": email, "type": "email_verify"},
+        settings.SECRET_KEY,
+        algorithm=security.ALGORITHM,
+    )
+    return encoded_jwt
+
+
+def verify_email_verification_token(token: str) -> str | None:
+    """Verify email verification token and return email if valid."""
+    try:
+        decoded_token = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
+        )
+        if decoded_token.get("type") != "email_verify":
+            return None
+        return str(decoded_token["sub"])
+    except InvalidTokenError:
+        return None
+
+
+def generate_verify_email_email(email_to: str, token: str) -> EmailData:
+    """Generate email content for email verification."""
+    project_name = settings.PROJECT_NAME
+    link = f"{settings.FRONTEND_HOST.rstrip('/')}/auth/verify-email?token={token}"
+    subject = f"{project_name} - Confirm your email"
+    html_content = render_email_template(
+        template_name="verify_email.html",
+        context={
+            "project_name": project_name,
+            "link": link,
+            "valid_hours": settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS,
+        },
+    )
+    return EmailData(html_content=html_content, subject=subject)

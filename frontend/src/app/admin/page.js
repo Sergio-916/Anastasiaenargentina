@@ -2,17 +2,11 @@
 
 import { useEffect } from 'react';
 import { Center, Spinner, Text, VStack } from '@chakra-ui/react';
+import { getBackendUrl } from '@/utils/settings';
 
 export default function AdminPage() {
   useEffect(() => {
-    // Get backend URL from environment or default
-    const backendUrl =
-  process.env.NEXT_PUBLIC_ENVIRONMENT === "production"
-    ? process.env.NEXT_PUBLIC_BACKEND_URL
-    : "http://localhost:8000";
-   
-    // // Redirect to backend admin panel (let backend handle auth state)
-    window.location.href = `${backendUrl}/admin`;
+    window.location.href = `${getBackendUrl()}/admin`;
   }, []);
 
   return (

@@ -34,8 +34,14 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "changethis"
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
-    FRONTEND_HOST: str = "http://localhost:5173"
+    FRONTEND_HOST: str = "http://localhost:3000"
+    BACKEND_HOST: str = "http://localhost:8000"
+    # Public URL for OAuth (used in production when API is proxied via frontend)
+    NEXT_PUBLIC_BACKEND_URL: str = ""
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
+
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
 
     BACKEND_CORS_ORIGINS: Annotated[
         list[AnyUrl] | str, BeforeValidator(parse_cors)

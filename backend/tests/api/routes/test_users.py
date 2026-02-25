@@ -282,7 +282,8 @@ def test_update_password_me_same_password_error(
     )
 
 
-def test_register_user(client: TestClient, db: Session) -> None:
+@patch("app.api.routes.users.send_email")
+def test_register_user(mock_send_email, client: TestClient, db: Session) -> None:
     username = random_email()
     password = random_lower_string()
     full_name = random_lower_string()
@@ -292,9 +293,9 @@ def test_register_user(client: TestClient, db: Session) -> None:
         json=data,
     )
     assert r.status_code == 200
-    created_user = r.json()
-    assert created_user["email"] == username
-    assert created_user["full_name"] == full_name
+    response = r.json()
+    assert "message" in response
+    assert "activate" in response["message"].lower() or "email" in response["message"].lower()
 
     user_query = select(User).where(User.email == username)
     user_db = db.exec(user_query).first()

@@ -11,6 +11,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useState, useRef } from "react";
+import { getBackendUrl } from "@/utils/settings";
 
 function ContactForm() {
   const form = useRef();
@@ -39,9 +40,8 @@ function ContactForm() {
     setError(null);
     setIsLoading(true);
 
-    try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://127.0.0.1:8000';
-      const response = await fetch(`${backendUrl}/api/v1/contacts/`, {
+    try {      
+      const response = await fetch(`${getBackendUrl()}/api/v1/contacts/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

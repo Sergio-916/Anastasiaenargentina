@@ -1,6 +1,6 @@
 "use client";
-// pages/index.js
 import { useState } from "react";
+import { getBackendUrl } from "@/utils/settings";
 
 function HomePage() {
   const [name, setName] = useState("");
@@ -14,8 +14,7 @@ function HomePage() {
     setStatus("Отправка...");
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://127.0.0.1:8000';
-      const response = await fetch(`${backendUrl}/api/v1/contacts/`, {
+      const response = await fetch(`${getBackendUrl()}/api/v1/contacts/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

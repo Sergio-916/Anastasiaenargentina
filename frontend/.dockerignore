@@ -4,4 +4,3 @@ npm-debug.log
 Dockerfile
 .dockerignore
 .env*
-/backend.data

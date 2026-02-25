@@ -2,6 +2,7 @@ import {
   Container,
   Text,
 } from "@chakra-ui/react";
+import { getBackendUrl } from "@/utils/settings";
 import SearchView from "../components/SearchView";
 
 // Force dynamic rendering for this page
@@ -13,11 +14,8 @@ export const metadata = {
 };
 
 async function fetchBlogPosts() {
-  const backendUrl = process.env.ENVIRONMENT == "production" ? process.env.BACKEND_URL : "http://localhost:8000";
-
-  
   try {
-    const res = await fetch(`${backendUrl}/api/v1/blog-posts/`, {
+    const res = await fetch(`${getBackendUrl()}/api/v1/blog-posts/`, {
       cache: 'no-store',
     });
 

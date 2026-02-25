@@ -1,4 +1,4 @@
-
+import { getBackendUrl } from "@/utils/settings";
 import {
   Box,
   Heading,
@@ -14,10 +14,7 @@ export const dynamic = 'force-dynamic';
 
 // Fetch tour by slug and date_id
 async function fetchTour(slug, date_id) {
-  // Use same logic as group-tours/page.js for consistency
-  const backendUrl = process.env.ENVIRONMENT == "production" ? process.env.BACKEND_URL : "http://127.0.0.1:8000";
-  console.log("env" , {backendUrl})
-  const res = await fetch(`${backendUrl}/api/v1/tours/${slug}/${date_id}`, {
+  const res = await fetch(`${getBackendUrl()}/api/v1/tours/${slug}/${date_id}`, {
     cache: 'no-store',
   });
   if (!res.ok) {

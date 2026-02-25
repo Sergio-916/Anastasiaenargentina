@@ -29,6 +29,7 @@ from app.models import (
     SiteUser,
     User,
     Item,
+    OAuthAccount,
 )  # noqa: F401
 from sqlmodel import SQLModel
 from app.core.config import settings # noqa

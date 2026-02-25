@@ -10,11 +10,12 @@ from app.api.deps import CurrentUser, SessionDep, get_current_active_superuser
 from app.core import security
 from app.core.config import settings
 from app.core.security import get_password_hash
-from app.models import Message, NewPassword, Token, UserPublic
+from app.models import Message, NewPassword, Token, UserPublic, VerifyEmailRequest
 from app.utils import (
     generate_password_reset_token,
     generate_reset_password_email,
     send_email,
+    verify_email_verification_token,
     verify_password_reset_token,
 )
 
@@ -28,17 +29,30 @@ def login_access_token(
     """
     OAuth2 compatible token login, get an access token for future requests.
     Supports both email (for User) and username (for AdminUser) authentication.
+    Returns USER_NOT_FOUND when email has no account (for create-account flow).
     """
     user = crud.authenticate(
         session=session, email=form_data.username, password=form_data.password
     )
     if not user:
+        if "@" in form_data.username:
+            existing_user = crud.get_user_by_email(
+                session=session, email=form_data.username
+            )
+            if not existing_user:
+                raise HTTPException(
+                    status_code=400,
+                    detail="USER_NOT_FOUND",
+                )
         raise HTTPException(
-            status_code=400, 
-            detail="Incorrect email/username or password. For admin users, use your admin username."
+            status_code=400,
+            detail="Incorrect email/username or password. For admin users, use your admin username.",
         )
     elif not user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(
+            status_code=400,
+            detail="Account not activated. Check your email for the verification link.",
+        )
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return Token(
         access_token=security.create_access_token(
@@ -53,6 +67,29 @@ def test_token(current_user: CurrentUser) -> Any:
     Test access token
     """
     return current_user
+
+
+@router.post("/auth/verify-email", response_model=Token)
+def verify_email(session: SessionDep, body: VerifyEmailRequest) -> Token:
+    """
+    Verify email via token from verification link. Activates user and returns JWT.
+    """
+    email = verify_email_verification_token(token=body.token)
+    if not email:
+        raise HTTPException(status_code=400, detail="Invalid or expired verification link")
+    user = crud.get_user_by_email(session=session, email=email)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.is_active = True
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    return Token(
+        access_token=security.create_access_token(
+            user.id, expires_delta=access_token_expires
+        )
+    )
 
 
 @router.post("/password-recovery/{email}")

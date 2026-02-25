@@ -24,7 +24,11 @@ from app.models import (
     UserUpdate,
     UserUpdateMe,
 )
-from app.utils import generate_new_account_email, send_email
+from app.utils import (
+    generate_email_verification_token,
+    generate_verify_email_email,
+    send_email,
+)
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -139,10 +143,11 @@ def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
     return Message(message="User deleted successfully")
 
 
-@router.post("/signup", response_model=UserPublic)
-def register_user(session: SessionDep, user_in: UserRegister) -> Any:
+@router.post("/signup", response_model=Message)
+def register_user(session: SessionDep, user_in: UserRegister) -> Message:
     """
     Create new user without the need to be logged in.
+    User is created with is_active=False. Verification email is sent.
     """
     user = crud.get_user_by_email(session=session, email=user_in.email)
     if user:
@@ -151,8 +156,22 @@ def register_user(session: SessionDep, user_in: UserRegister) -> Any:
             detail="The user with this email already exists in the system",
         )
     user_create = UserCreate.model_validate(user_in)
-    user = crud.create_user(session=session, user_create=user_create)
-    return user
+    user = crud.create_user_for_signup(
+        session=session,
+        user_create=user_create,
+        is_active=not settings.emails_enabled,
+    )
+    if settings.emails_enabled:
+        token = generate_email_verification_token(email=user.email)
+        email_data = generate_verify_email_email(email_to=user.email, token=token)
+        send_email(
+            email_to=user.email,
+            subject=email_data.subject,
+            html_content=email_data.html_content,
+        )
+    return Message(
+        message="Check your email to activate your account"
+    )
 
 
 @router.get("/{user_id}", response_model=UserPublic)

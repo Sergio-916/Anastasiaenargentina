@@ -195,16 +195,33 @@ class UpdatePassword(SQLModel):
     new_password: str = Field(min_length=8, max_length=128)
 
 
+# -----------------------------------------------------
+# OAuth Accounts (links User to OAuth providers)
+# -----------------------------------------------------
+class OAuthAccount(SQLModel, table=True):
+    __tablename__ = "oauth_accounts"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
+    provider: str = Field(max_length=50)
+    provider_user_id: str = Field(max_length=255)
+    access_token: Optional[str] = None
+    refresh_token: Optional[str] = None
+    expires_at: Optional[datetime] = None
+
+
 # Database model, database table inferred from class name (default 'user')
 class User(UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    hashed_password: str
+    hashed_password: Optional[str] = Field(default=None, max_length=255)
+    image: Optional[str] = Field(default=None, max_length=500)
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 # Properties to return via API, id is always required
 class UserPublic(UserBase):
     id: uuid.UUID
+    image: Optional[str] = None
 
 
 class UsersPublic(SQLModel):
@@ -265,3 +282,7 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=128)
+
+
+class VerifyEmailRequest(SQLModel):
+    token: str

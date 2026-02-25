@@ -1,16 +1,15 @@
 import { Box, Heading, Text, Container, Link, Button } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { notFound } from "next/navigation";
+import { getBackendUrl } from "@/utils/settings";
 
 // Force dynamic rendering for this page
 export const dynamic = 'force-dynamic';
 
 // Fetch blog post by slug from API
 async function fetchBlogPost(slug) {
-  const backendUrl = process.env.ENVIRONMENT == "production" ? process.env.BACKEND_URL : "http://localhost:8000";
-
   try {
-    const res = await fetch(`${backendUrl}/api/v1/blog-posts/${slug}`, {
+    const res = await fetch(`${getBackendUrl()}/api/v1/blog-posts/${slug}`, {
       cache: 'no-store',
     });
 
@@ -31,10 +30,8 @@ async function fetchBlogPost(slug) {
 
 // Fetch all blog posts for static params generation
 async function fetchAllBlogPosts() {
-  const backendUrl = process.env.BACKEND_URL || "http://anastasia_backend:8000";
-
   try {
-    const res = await fetch(`${backendUrl}/api/v1/blog-posts/?limit=1000`, {
+    const res = await fetch(`${getBackendUrl()}/api/v1/blog-posts/?limit=1000`, {
       cache: 'no-store',
     });
 
