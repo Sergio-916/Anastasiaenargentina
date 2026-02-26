@@ -14,18 +14,23 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react";
+import PasswordInput from "@/app/components/PasswordInput";
 import { useAuth } from "@/contexts/AuthContext";
 import CreateAccountModal from "@/app/components/CreateAccountModal";
+import ForgotPasswordModal from "@/app/components/ForgotPasswordModal";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCreateAccountModal, setShowCreateAccountModal] = useState(false);
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const { login, user, isLoading } = useAuth();
   const router = useRouter();
   const toast = useToast();
 
+  const [showEmalPassModal, setShowEmalPassModal] = useState(false);
+  
   // Use relative URL - middleware rewrites /api to backend
   const googleLoginUrl = "/api/v1/login/google";
 
@@ -71,6 +76,10 @@ export default function LoginPage() {
     return null;
   }
 
+  const toggleEmalPassModal = () => {
+    setShowEmalPassModal(!showEmalPassModal);
+  };
+
   return (
     <Flex minH="60vh" align="center" justify="center" p={4}>
       <Box
@@ -102,8 +111,18 @@ export default function LoginPage() {
 
           <Text textAlign="center" color="gray.600">или</Text>
 
+          <Button
+            colorScheme="teal"
+            w="full"
+            onClick={() => toggleEmalPassModal(true)}
+          >
+            Войти через email/пароль
+          </Button>
+          
           <form onSubmit={handleSubmit}>
             <VStack spacing={4}>
+              {showEmalPassModal && (
+                <>
               <FormControl isRequired>
                 <FormLabel>Email</FormLabel>
                 <Input
@@ -116,8 +135,7 @@ export default function LoginPage() {
               </FormControl>
               <FormControl isRequired>
                 <FormLabel>Пароль</FormLabel>
-                <Input
-                  type="password"
+                <PasswordInput
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
@@ -133,9 +151,15 @@ export default function LoginPage() {
               >
                 Войти
               </Button>
-            </VStack>
-          </form>
-
+              <Link
+                as="button"
+                fontSize="sm"
+                color="teal.500"
+                _hover={{ textDecoration: "underline" }}
+                onClick={() => setShowForgotPasswordModal(true)}
+              >
+                Забыли пароль?
+              </Link>
           <Text fontSize="sm" color="gray.500" textAlign="center">
             Нет аккаунта?{" "}
             <Link
@@ -147,12 +171,22 @@ export default function LoginPage() {
               Создать аккаунт
             </Link>
           </Text>
+              </>
+              )}
+            </VStack>
+          </form>
+
         </VStack>
       </Box>
 
       <CreateAccountModal
         isOpen={showCreateAccountModal}
         onClose={() => setShowCreateAccountModal(false)}
+        initialEmail={email}
+      />
+      <ForgotPasswordModal
+        isOpen={showForgotPasswordModal}
+        onClose={() => setShowForgotPasswordModal(false)}
         initialEmail={email}
       />
     </Flex>

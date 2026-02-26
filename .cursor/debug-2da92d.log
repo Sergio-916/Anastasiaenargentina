@@ -1,0 +1,6 @@
+{"sessionId": "2da92d", "location": "login.py:reset_password", "message": "token_verify", "data": {"token_valid": true}, "timestamp": 1772119178474.426, "hypothesisId": "H2"}
+{"sessionId": "2da92d", "location": "login.py:reset_password", "message": "reset_password_check", "data": {"email": "sergshpak03@mail.ru", "user_exists": true, "is_active": false}, "timestamp": 1772119178475.732, "hypothesisId": "H1"}
+{"sessionId": "2da92d", "location": "login.py:reset_password", "message": "password_reset_success", "data": {"email": "sergshpak03@mail.ru"}, "timestamp": 1772119178694.747, "runId": "post-fix"}
+{"sessionId": "2da92d", "location": "login.py:reset_password", "message": "token_verify", "data": {"token_valid": true}, "timestamp": 1772119266471.7231, "hypothesisId": "H2"}
+{"sessionId": "2da92d", "location": "login.py:reset_password", "message": "reset_password_check", "data": {"email": "sergshpak03@mail.ru", "user_exists": true, "is_active": true}, "timestamp": 1772119266473.2148, "hypothesisId": "H1"}
+{"sessionId": "2da92d", "location": "login.py:reset_password", "message": "password_reset_success", "data": {"email": "sergshpak03@mail.ru"}, "timestamp": 1772119266680.325, "runId": "post-fix"}

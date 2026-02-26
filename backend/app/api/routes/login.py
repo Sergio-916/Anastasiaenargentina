@@ -130,8 +130,9 @@ def reset_password(session: SessionDep, body: NewPassword) -> Message:
             status_code=404,
             detail="The user with this email does not exist in the system.",
         )
-    elif not user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
+    # Activate inactive users on password reset (email ownership proven by clicking reset link)
+    if not user.is_active:
+        user.is_active = True
     hashed_password = get_password_hash(password=body.new_password)
     user.hashed_password = hashed_password
     session.add(user)

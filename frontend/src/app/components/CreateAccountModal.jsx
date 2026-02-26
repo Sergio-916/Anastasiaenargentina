@@ -16,6 +16,7 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react";
+import PasswordInput from "@/app/components/PasswordInput";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function CreateAccountModal({ isOpen, onClose, initialEmail = "" }) {
@@ -115,8 +116,7 @@ export default function CreateAccountModal({ isOpen, onClose, initialEmail = "" 
               </FormControl>
               <FormControl isRequired>
                 <FormLabel>Пароль</FormLabel>
-                <Input
-                  type="password"
+                <PasswordInput
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Минимум 8 символов"
