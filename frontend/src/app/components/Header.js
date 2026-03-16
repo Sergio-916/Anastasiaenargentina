@@ -1,7 +1,6 @@
 "use client";
 import {
   Image,
-  Avatar,
   Box,
   Button,
   Flex,
@@ -13,9 +12,11 @@ import {
   Link,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
-
+import { useState, useEffect } from "react";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { useAuth } from "@/contexts/AuthContext";
+import LoginButton from "./LoginButton/LoginButton";
+import { getBackendUrl } from "@/utils/settings";
 
 export const menuItems = [
   "Главная",
@@ -24,13 +25,33 @@ export const menuItems = [
   "Обо мне",
   "Контакты",
 ];
-export const menuRoures = ["/", "/tours","/blog", "/about", "/contacts"];
+export const menuRoutes = ["/", "/tours","/blog", "/about", "/contacts"];
 function Header() {
   const logo = "/logo.svg";
   const { user, isLoading, logout } = useAuth();
 
+  const [features, setFeatures] = useState(null);
+
+  useEffect(() => {
+    const fetchFeatureFlag = async () => {
+      try {
+        const response = await fetch(`${getBackendUrl()}/api/v1/utils/features`);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const fetchData = await response.json();
+        setFeatures(fetchData.registration_enabled);
+
+      } catch (err) {
+        console.error("Feature flag fetch failed:", err);
+      }
+    };
+    fetchFeatureFlag();
+  }, []);
+
   return (
-    <>
+    <>    
       <Flex
         as="nav"
         align="center"
@@ -58,72 +79,15 @@ function Header() {
               _hover={{ bg: "teal.600" }}
               fontSize={['md','lg','xl']}
             >
-              <Link as={NextLink} href={menuRoures[index]} >
+              <Link as={NextLink} href={menuRoutes[index]} >
                 {item}
               </Link>
             </Button>
           ))}
-          {!isLoading && (
-            user ? (
-              <Menu>
-                <MenuButton
-                  as={Button}
-                  variant="ghost"
-                  color="white"
-                  _hover={{ bg: "teal.600" }}
-                  leftIcon={<Avatar size="sm" name={user.full_name || user.email} src={user.image} />}
-                >
-                  {user.full_name || user.email}
-                </MenuButton>
-                <MenuList zIndex={1000}>
-                  <MenuItem onClick={logout}>Выйти</MenuItem>
-                </MenuList>
-              </Menu>
-            ) : (
-              <Button
-                as={NextLink}
-                href="/login"
-                colorScheme="whiteAlpha"
-                color="white"
-                variant="outline"
-                size="sm"
-              >
-                Войти
-              </Button>
-            )
-          )}
+          <LoginButton isLoading={isLoading} user={user} logout={logout} features={features}/>
         </Box>
         <Box display={{ base: "flex", lg: "none" }} justifyContent="flex-end" alignItems="center" gap={2}>
-          {!isLoading && (
-            user ? (
-              <Menu>
-                <MenuButton
-                  as={Button}
-                  variant="ghost"
-                  color="white"
-                  _hover={{ bg: "teal.600" }}
-                  leftIcon={<Avatar size="sm" name={user.full_name || user.email} src={user.image} />}
-                  size="sm"
-                >
-                  {user.full_name || user.email}
-                </MenuButton>
-                <MenuList zIndex={1000}>
-                  <MenuItem onClick={logout}>Выйти</MenuItem>
-                </MenuList>
-              </Menu>
-            ) : (
-              <Button
-                as={NextLink}
-                href="/login"
-                colorScheme="whiteAlpha"
-                color="white"
-                variant="outline"
-                size="sm"
-              >
-                Войти
-              </Button>
-            )
-          )}
+        <LoginButton isLoading={isLoading} user={user} logout={logout} features={features}/>
           <Menu>
             <MenuButton
               as={IconButton}
@@ -134,12 +98,12 @@ function Header() {
             <MenuList zIndex={1000}>
               {menuItems.map((item, index) => (
                 <MenuItem key={index}>
-                  <Link as={NextLink} href={menuRoures[index]} w="full">
+                  <Link as={NextLink} href={menuRoutes[index]} w="full">
                     {item}
                   </Link>
                 </MenuItem>
               ))}
-              {!isLoading && user && (
+              {!isLoading && user && features && (
                 <MenuItem onClick={logout}>Выйти</MenuItem>
               )}
             </MenuList>

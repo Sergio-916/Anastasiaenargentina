@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Box,
@@ -19,6 +19,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import CreateAccountModal from "@/app/components/CreateAccountModal";
 import ForgotPasswordModal from "@/app/components/ForgotPasswordModal";
 
+
+
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,9 +33,12 @@ export default function LoginPage() {
   const toast = useToast();
 
   const [showEmalPassModal, setShowEmalPassModal] = useState(false);
+
+
   
   // Use relative URL - middleware rewrites /api to backend
   const googleLoginUrl = "/api/v1/login/google";
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -47,6 +47,8 @@ class Settings(BaseSettings):
         list[AnyUrl] | str, BeforeValidator(parse_cors)
     ] = []
 
+
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def all_cors_origins(self) -> list[str]:
@@ -120,6 +122,8 @@ class Settings(BaseSettings):
         )
 
         return self
+    # feature flag registration
+    feature_registration_enabled: bool = False
 
 
 settings = Settings()  # type: ignore

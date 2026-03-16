@@ -1,9 +1,11 @@
+# /api/v1/utils/
 from fastapi import APIRouter, Depends
 from pydantic.networks import EmailStr
 
 from app.api.deps import get_current_active_superuser
 from app.models import Message
 from app.utils import generate_test_email, send_email
+from app.core.config import settings
 
 router = APIRouter(prefix="/utils", tags=["utils"])
 
@@ -30,7 +32,9 @@ def test_email(email_to: EmailStr) -> Message:
 async def health_check() -> bool:
     return True
 
-# /api/v1/utils/
-@router.get("/")
-async def root() -> str:
-    return "Hello World"
+
+@router.get("/features")
+def get_features():
+    return {
+        "registration_enabled": settings.feature_registration_enabled
+    }

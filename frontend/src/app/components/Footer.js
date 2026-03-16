@@ -2,7 +2,7 @@
 
 import { Box, Flex, Link, Container, Text, Stack } from "@chakra-ui/react";
 import NextLink from "next/link";
-import { menuItems, menuRoures } from "./Header";
+import { menuItems, menuRoutes } from "./Header";
 import { FaInstagram, FaFacebook, FaWhatsapp, FaYoutube } from "react-icons/fa";
 
 function Footer() {
@@ -48,7 +48,7 @@ function Footer() {
                 direction={["column", null, "row", "row"]}
               >
                 {menuItems.map((item, index) => (
-                  <Link key={index} as={NextLink} href={menuRoures[index]}>
+                  <Link key={index} as={NextLink} href={menuRoutes[index]}>
                     {item}
                   </Link>
                 ))}
