@@ -28,7 +28,6 @@ from app.models import (
     BlogPost,
     SiteUser,
     User,
-    Item,
     OAuthAccount,
 )  # noqa: F401
 from sqlmodel import SQLModel

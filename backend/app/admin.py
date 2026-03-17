@@ -12,7 +12,6 @@ from app.core.db import engine
 from app.core.security import verify_password
 from app.models import (
     User,
-    Item,
     Contact,
     Tour,
     TourDate,
@@ -102,25 +101,6 @@ class UserAdmin(ModelView, model=User):
     name_plural = "Users"
     icon = "fa-solid fa-user"
     category = "Accounts"
-    can_create = True
-    can_edit = True
-    can_delete = True
-    can_view_details = True
-    can_export = True
-
-
-class ItemAdmin(ModelView, model=Item):
-    """
-    Admin interface for Item model.
-    """
-    column_list = [Item.id, Item.title, Item.description, Item.owner_id]
-    column_searchable_list = [Item.title, Item.description]
-    column_sortable_list = [Item.id, Item.title]
-    column_default_sort = [(Item.id, True)]
-    name = "Item"
-    name_plural = "Items"
-    icon = "fa-solid fa-box"
-    category = "Content"
     can_create = True
     can_edit = True
     can_delete = True
@@ -314,7 +294,6 @@ def setup_admin(app, secret_key: str) -> Admin:
     
     # Add all views
     admin.add_view(UserAdmin)
-    admin.add_view(ItemAdmin)
     admin.add_view(ContactAdmin)
     admin.add_view(TourAdmin)
     admin.add_view(TourDateAdmin)
