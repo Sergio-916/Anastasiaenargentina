@@ -123,9 +123,63 @@ def _clean_docx_markdown(markdown: str) -> str:
     return text
 
 
+def _separate_glued_markdown_images(markdown: str) -> str:
+    """
+    Mammoth often puts the first image on the same line as the title with no space:
+    'Some title 🏖️![](/blog-media/...webp)'. Many Markdown parsers mis-handle that.
+    Split so the image starts its own block (blank line before ![]).
+    """
+    out: list[str] = []
+    for line in markdown.splitlines():
+        # Only when ![ is glued to previous non-whitespace (not already " ![")
+        patched = re.sub(r"(\S)(!\[)", r"\1\n\n\2", line)
+        if "\n" in patched:
+            out.extend(patched.splitlines())
+        else:
+            out.append(patched)
+    return "\n".join(out)
+
+
+def _normalize_markdown_image_syntax(markdown: str) -> str:
+    """
+    Word / Copilot often put a long, multi-line image description in the alt text.
+    Markdown requires ![alt](url) with no raw newlines inside [...]; otherwise parsers
+    (e.g. react-markdown) do not treat it as an image and the link breaks.
+    """
+    parts: list[str] = []
+    i = 0
+    n = len(markdown)
+    while i < n:
+        start = markdown.find("![", i)
+        if start == -1:
+            parts.append(markdown[i:])
+            break
+        parts.append(markdown[i:start])
+        close_alt = markdown.find("](", start + 2)
+        if close_alt == -1:
+            parts.append(markdown[start : start + 2])
+            i = start + 2
+            continue
+        close_url = markdown.find(")", close_alt + 2)
+        if close_url == -1:
+            parts.append(markdown[start : close_alt + 2])
+            i = close_alt + 2
+            continue
+        alt = markdown[start + 2 : close_alt]
+        url = markdown[close_alt + 2 : close_url]
+        alt_one_line = re.sub(r"\s+", " ", alt.strip())
+        if len(alt_one_line) > 500:
+            alt_one_line = alt_one_line[:497] + "..."
+        parts.append(f"![{alt_one_line}]({url})")
+        i = close_url + 1
+    return "".join(parts)
+
+
 def _plain_title_for_db(raw: str) -> str:
     """Strip HTML/markdown noise for BlogPost.title (plain text)."""
     s = raw.strip()
+    # Title line may still contain ![](url) if mammoth glued it (defensive)
+    s = re.sub(r"!\[[^\]]*\]\([^)]*\)\s*", "", s)
     s = re.sub(r"<a\b[^>]*>\s*</a>\s*", "", s, flags=re.IGNORECASE)
     s = re.sub(r"<[^>]+>", "", s)
     s = re.sub(r"^#\s+", "", s)
@@ -213,6 +267,8 @@ def parse_docx_to_markdown(file_path: Path, slug: str, data_dir: Path) -> tuple[
             print(f"    Warning: {message.message}")
 
     markdown = _clean_docx_markdown(markdown)
+    markdown = _separate_glued_markdown_images(markdown)
+    markdown = _normalize_markdown_image_syntax(markdown)
     cover = first_url[0] if first_url else None
     return markdown, cover
 

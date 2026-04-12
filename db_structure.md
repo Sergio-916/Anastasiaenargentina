@@ -2,6 +2,8 @@
 
 Single source of truth for the database schema. Use this file to validate queries, ORM models, and migrations.
 
+Alembic revision `121f4837c176` (`ensure_seeded_site_tables`) creates the seeded-site tables below when they are missing, so a clean `alembic upgrade head` matches this document (in addition to `user`, `oauth_accounts`, and `blog_posts` from earlier revisions).
+
 ---
 
 ## Seeded Tables (from existing database)

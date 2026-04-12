@@ -17,8 +17,12 @@ depends_on = None
 
 
 def upgrade():
-    # Drop contact_info table if it exists
-    op.drop_table("contact_info")
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    tables = inspector.get_table_names()
+
+    if "contact_info" in tables:
+        op.drop_table("contact_info")
 
 
 def downgrade():
