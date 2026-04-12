@@ -212,7 +212,7 @@ class SiteUserAdmin(ModelView, model=SiteUser):
 class BlogPostAdmin(ModelView, model=BlogPost):
     """
     Admin interface for BlogPost model.
-    Note: content, keywords, and image fields are excluded from list view
+    Note: content_markdown and similar fields are excluded from list view
     but available in detail/edit views.
     """
     column_list = [

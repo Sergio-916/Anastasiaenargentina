@@ -1,6 +1,7 @@
 import { Box, Heading, Text, Container, Link, Button } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { notFound } from "next/navigation";
+import ReactMarkdown from "react-markdown";
 import { getBackendUrl } from "@/utils/settings";
 
 // Force dynamic rendering for this page
@@ -78,6 +79,8 @@ export default async function BlogPostPage({ params }) {
     notFound();
   }
 
+  const backendBase = getBackendUrl().replace(/\/$/, "");
+
   return (
     <main>
       <Container maxW="container.xl">
@@ -110,10 +113,31 @@ export default async function BlogPostPage({ params }) {
                 "& ul": {
                   ml: 6,
                   mb: 4
+                },
+                "& h1, & h2, & h3": {
+                  mt: 6,
+                  mb: 3
                 }
               }}
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
+            >
+              <ReactMarkdown
+                components={{
+                  img: ({ src, alt, ...rest }) => (
+                    <img
+                      {...rest}
+                      src={
+                        typeof src === "string" && src.startsWith("/")
+                          ? `${backendBase}${src}`
+                          : src
+                      }
+                      alt={alt ?? ""}
+                    />
+                  ),
+                }}
+              >
+                {post.content_markdown ?? ""}
+              </ReactMarkdown>
+            </Box>
 
             <Text my={5}>
               👉Эту и другие статьи вы можете найти в нашем{" "}

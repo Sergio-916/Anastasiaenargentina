@@ -6,6 +6,10 @@ This script:
 1. Creates an SSH tunnel to the remote server
 2. Dumps the remote database using pg_dump
 3. Restores the dump to the local database
+4. Repairs duplicate emails on public.user (if any) so ix_user_email can be created
+
+pg_restore may exit with code 1 when duplicate keys prevent a unique index; those cases
+are treated as non-fatal and fixed by deleting duplicate user rows (smallest id kept).
 
 Usage:
     python scripts/copy_db.py [--local-db-name LOCAL_DB_NAME] [--local-db-user LOCAL_DB_USER] [--local-db-host LOCAL_DB_HOST] [--local-db-port LOCAL_DB_PORT]
@@ -477,6 +481,70 @@ def dump_remote_database(dump_file: Path, db_user: str, db_password: str, db_nam
         return False
 
 
+def repair_user_email_duplicates(
+    db_name: str,
+    db_user: str,
+    db_host: str,
+    db_port: str,
+    db_password: str,
+) -> bool:
+    """
+    If the dump contained duplicate emails in public.user, CREATE UNIQUE INDEX ix_user_email
+    fails during pg_restore. Remove duplicates (keep row with smallest id) and create the index.
+    """
+    psql_path = get_psql_path()
+    env = os.environ.copy()
+    if db_password:
+        env["PGPASSWORD"] = db_password
+
+    delete_sql = (
+        'DELETE FROM "user" AS a USING "user" AS b '
+        "WHERE a.email IS NOT NULL AND a.email = b.email AND a.id > b.id;"
+    )
+    index_sql = (
+        'CREATE UNIQUE INDEX IF NOT EXISTS ix_user_email '
+        'ON public."user" USING btree (email);'
+    )
+
+    print("Post-restore: fixing duplicate emails on public.user (if any)...")
+    for description, sql in (
+        ("delete duplicate user rows (keep smallest id)", delete_sql),
+        ("create unique index ix_user_email", index_sql),
+    ):
+        result = subprocess.run(
+            [
+                psql_path,
+                "-h",
+                db_host,
+                "-p",
+                db_port,
+                "-U",
+                db_user,
+                "-d",
+                db_name,
+                "-v",
+                "ON_ERROR_STOP=1",
+                "-c",
+                sql,
+            ],
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        err = (result.stderr or "") + (result.stdout or "")
+        if result.returncode != 0:
+            if "relation \"user\" does not exist" in err or (
+                "does not exist" in err and '"user"' in err
+            ):
+                print(f"  (skipped: {description} — table not found)")
+                return True
+            print(f"❌ {description} failed:\n{err}")
+            return False
+    print("  ✓ user.email is unique")
+    return True
+
+
 def restore_local_database(
     dump_file: Path,
     db_name: str,
@@ -517,18 +585,23 @@ def restore_local_database(
             timeout=600  # 10 minutes timeout
         )
         
-        if result.returncode != 0:
-            print(f"⚠ pg_restore completed with warnings/errors:")
-            print(result.stderr)
-            # Check if it's just warnings or actual errors
-            if "ERROR" in result.stderr.upper():
-                print("❌ Restore failed due to errors")
-                return False
-            else:
-                print("✓ Restore completed (with warnings)")
-                return True
-        
-        print(f"✓ Database restored successfully to '{db_name}'")
+        combined = (result.stderr or "") + (result.stdout or "")
+
+        # pg_restore: 0 = ok, 1 = completed with warnings/non-fatal issues, 2 = fatal
+        if result.returncode not in (0, 1):
+            print(f"❌ pg_restore failed (exit code {result.returncode})")
+            print(combined)
+            return False
+
+        if result.returncode == 1 or "ERROR" in combined.upper():
+            print(
+                "⚠ pg_restore reported warnings or non-fatal errors "
+                "(often duplicate keys when creating indexes). Continuing..."
+            )
+            if result.stderr:
+                print(result.stderr)
+
+        print(f"✓ pg_restore finished for '{db_name}'")
         return True
         
     except subprocess.TimeoutExpired:
@@ -628,6 +701,16 @@ def main():
         local_db_password
     ):
         print("❌ Failed to restore database")
+        sys.exit(1)
+
+    if not repair_user_email_duplicates(
+        local_db_name,
+        local_db_user,
+        local_db_host,
+        local_db_port,
+        local_db_password,
+    ):
+        print("❌ Post-restore repair failed (duplicate user emails / index)")
         sys.exit(1)
     
     print()

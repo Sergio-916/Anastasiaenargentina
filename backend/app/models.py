@@ -88,11 +88,11 @@ class BlogPost(SQLModel, table=True):
     
     id: Optional[int] = Field(default=None, primary_key=True)
     title: str = Field(max_length=255)
-    content: str  # Removed max_length to support HTML with Base64 images
     slug: str = Field(unique=True, max_length=255)
+    content_markdown: str
     description: Optional[str] = None
     keywords: Optional[str] = None
-    image: Optional[str] = None
+    cover_image_url: Optional[str] = None
     reading_time_minutes: Optional[int] = None
     created_at: Optional[datetime] = Field(default_factory=datetime.now)
     updated_at: Optional[datetime] = Field(default_factory=datetime.now)
@@ -100,23 +100,32 @@ class BlogPost(SQLModel, table=True):
     def __str__(self):
         return self.title
 
+class BlogPostListItem(SQLModel):
+    id: int
+    title: str
+    slug: str
+    description: Optional[str] = None
+    cover_image_url: Optional[str] = None
+    reading_time_minutes: Optional[int] = None
+    created_at: Optional[datetime] = None
+
 
 # Pydantic model for returning blog posts via API
 class BlogPostPublic(SQLModel):
     id: int
     title: str
-    content: str
     slug: str
+    content_markdown: str
     description: Optional[str] = None
     keywords: Optional[str] = None
-    image: Optional[str] = None
+    cover_image_url: Optional[str] = None
     reading_time_minutes: Optional[int] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
 
 class BlogPostsPublic(SQLModel):
-    data: list[BlogPostPublic]
+    data: list[BlogPostListItem]
     count: int
 
 

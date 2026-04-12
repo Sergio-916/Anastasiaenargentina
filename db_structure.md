@@ -71,18 +71,18 @@ Single source of truth for the database schema. Use this file to validate querie
 
 ### blog_posts
 
-| Column              | Type         | Constraints       | Description        |
-|---------------------|--------------|-------------------|--------------------|
-| id                  | INTEGER      | PRIMARY KEY, AUTO |                    |
-| title               | VARCHAR(255) | NOT NULL          |                    |
-| content             | TEXT         | NOT NULL          | HTML with Base64   |
-| slug                | VARCHAR(255) | UNIQUE, NOT NULL  |                    |
-| description         | VARCHAR      | NULL              |                    |
-| keywords            | VARCHAR      | NULL              |                    |
-| image               | VARCHAR      | NULL              |                    |
-| reading_time_minutes| INTEGER      | NULL              |                    |
-| created_at          | DATETIME     | DEFAULT now()     |                    |
-| updated_at          | DATETIME     | DEFAULT now()     |                    |
+| Column               | Type         | Constraints       | Description        |
+|----------------------|--------------|-------------------|--------------------|
+| id                   | INTEGER      | PRIMARY KEY, AUTO |                    |
+| title                | VARCHAR(255) | NOT NULL          |                    |
+| content_markdown     | TEXT         | NOT NULL          | Markdown body; images as `/blog-media/{slug}/...` |
+| slug                 | VARCHAR(255) | UNIQUE, NOT NULL  |                    |
+| description          | VARCHAR      | NULL              |                    |
+| keywords             | VARCHAR      | NULL              |                    |
+| cover_image_url      | VARCHAR      | NULL              | Optional; first embedded image path (same prefix as above) |
+| reading_time_minutes | INTEGER      | NULL              |                    |
+| created_at           | DATETIME     | DEFAULT now()     |                    |
+| updated_at           | DATETIME     | DEFAULT now()     |                    |
 
 **Model:** `BlogPost`
 

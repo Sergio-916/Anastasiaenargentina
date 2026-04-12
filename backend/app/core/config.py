@@ -1,6 +1,7 @@
 import secrets
 import warnings
 from typing import Annotated, Any, Literal
+from urllib.parse import unquote, urlparse
 
 from pydantic import (
     AnyUrl,
@@ -63,6 +64,40 @@ class Settings(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str = ""
     POSTGRES_DB: str = ""
+    # Optional single URL in .env; fills discrete POSTGRES_* only where those are empty
+    POSTGRES_URL: str | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _merge_postgres_url(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        merged = dict(data)
+        url = merged.get("POSTGRES_URL")
+        if not isinstance(url, str) or not url.strip():
+            return merged
+        parsed = urlparse(url)
+        if not parsed.hostname:
+            return merged
+        scheme = parsed.scheme
+        if scheme not in ("postgresql", "postgres") and not scheme.startswith(
+            "postgresql+"
+        ):
+            return merged
+
+        def fill_if_empty(key: str, value: Any) -> None:
+            current = merged.get(key)
+            if current is None or current == "":
+                merged[key] = value
+
+        fill_if_empty("POSTGRES_USER", unquote(parsed.username or ""))
+        fill_if_empty("POSTGRES_PASSWORD", unquote(parsed.password or ""))
+        fill_if_empty("POSTGRES_SERVER", parsed.hostname)
+        fill_if_empty("POSTGRES_PORT", parsed.port or 5432)
+        dbname = (parsed.path or "").lstrip("/").split("?")[0]
+        if dbname:
+            fill_if_empty("POSTGRES_DB", dbname)
+        return merged
 
     @computed_field  # type: ignore[prop-decorator]
     @property

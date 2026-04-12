@@ -1,7 +1,10 @@
+from pathlib import Path
+
 import sentry_sdk
 from fastapi import FastAPI, Request
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
+from starlette.staticfiles import StaticFiles
 from starlette.formparsers import MultiPartParser
 from starlette.requests import Request as StarletteRequest
 
@@ -97,6 +100,15 @@ if settings.all_cors_origins:
     )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+# Blog post images written by import_docx_blog_posts_markdown.py (data/blog_media/{slug}/)
+_blog_media_root = Path(__file__).resolve().parent.parent / "data" / "blog_media"
+_blog_media_root.mkdir(parents=True, exist_ok=True)
+app.mount(
+    "/blog-media",
+    StaticFiles(directory=str(_blog_media_root)),
+    name="blog-media",
+)
 
 # Setup admin panel
 setup_admin(app, secret_key=settings.SECRET_KEY)

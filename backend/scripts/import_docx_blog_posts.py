@@ -81,6 +81,7 @@ if _early_args.production:
 from app.core.config import settings
 from app.models import BlogPost
 from app.ssh_util import ssh_tunnel
+from app.translit import transliterate
 
 
 def parse_args():
@@ -185,39 +186,6 @@ def convert_docx_to_html_with_images(
     
     # Return empty list for image_paths since images are embedded in HTML
     return html_content, []
-
-
-def transliterate(text: str) -> str:
-    """
-    Transliterate Russian (Cyrillic) text to English (Latin) characters.
-    Uses standard transliteration mapping.
-    """
-    # Multi-character transliteration (must be done first)
-    multi_char_replacements = {
-        'ё': 'yo', 'ж': 'zh', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'sch',
-        'ю': 'yu', 'я': 'ya',
-        'Ё': 'Yo', 'Ж': 'Zh', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Sch',
-        'Ю': 'Yu', 'Я': 'Ya',
-    }
-    
-    # Single character transliteration using str.translate() (more efficient)
-    single_char_translation = str.maketrans({
-        'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e',
-        'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
-        'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
-        'ф': 'f', 'х': 'h', 'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e',
-        'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E',
-        'З': 'Z', 'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M',
-        'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U',
-        'Ф': 'F', 'Х': 'H', 'Ъ': '', 'Ы': 'Y', 'Ь': '', 'Э': 'E',
-    })
-    
-    # Apply multi-character replacements first, then single character translation
-    result = text
-    for cyrillic, latin in multi_char_replacements.items():
-        result = result.replace(cyrillic, latin)
-    
-    return result.translate(single_char_translation)
 
 
 def generate_slug(filename: str) -> str:
