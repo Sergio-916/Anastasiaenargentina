@@ -122,13 +122,20 @@ export default async function BlogPostPage({ params }) {
             >
               <ReactMarkdown
                 components={{
-                  img: ({ src, alt, ...rest }) => (
-                    <img
-                      {...rest}
-                      src={src}
-                      alt={alt ?? ""}
-                    />
-                  ),
+                  img: ({ src, alt, ...rest }) => {
+                    const finalSrc =
+                      backendBase === "http://127.0.0.1:8000" && typeof src === "string" && src.startsWith("/")
+                        ? `${backendBase}${src}`
+                        : src;
+
+                    return (
+                      <img
+                        {...rest}
+                        src={finalSrc}
+                        alt={alt ?? ""}
+                      />
+                    );
+                  },
                 }}
               >
                 {post.content_markdown ?? ""}
