@@ -3,6 +3,7 @@
 Import .docx files as blog posts: Markdown body + WebP images on disk under data/blog_media/{slug}/.
 
 Image URLs in markdown use /blog-media/{slug}/... (served by FastAPI StaticFiles).
+With --production, image files are uploaded to VPS via SFTP into backend/data/blog_media.
 
 Usage:
     python scripts/import_docx_blog_posts_markdown.py [--force] [--dry-run] [--production] [--data-dir PATH]
@@ -14,14 +15,17 @@ from __future__ import annotations
 import argparse
 import io
 import os
+import posixpath
 import re
 import sys
 import uuid
+from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
 import mammoth
+import paramiko
 from mammoth.images import img_element
 from PIL import Image
 from sqlmodel import Session, select
@@ -53,6 +57,55 @@ from app.core.config import settings
 from app.models import BlogPost
 from app.ssh_util import ssh_tunnel
 from app.translit import transliterate
+
+SSH_HOST = "31.97.174.27"
+SSH_PORT = 22
+SSH_USER = "devuser"
+SSH_KEY_PATH = "/Users/sergey.shpak79gmail.com/.ssh/vps_31_ed25519"
+VPS_BLOG_MEDIA_ROOT = (
+    "/home/devuser/projects/Anastasiaenargentina/backend/data/blog_media"
+)
+
+
+def load_private_key(path: str):
+    loaders = [
+        paramiko.Ed25519Key.from_private_key_file,
+        paramiko.RSAKey.from_private_key_file,
+        paramiko.ECDSAKey.from_private_key_file,
+    ]
+    last_error = None
+    for loader in loaders:
+        try:
+            return loader(path)
+        except Exception as e:
+            last_error = e
+    raise RuntimeError(f"Could not load SSH key: {last_error}")
+
+
+def sftp_mkdir_p(sftp: paramiko.SFTPClient, remote_directory: str) -> None:
+    parts = remote_directory.strip("/").split("/")
+    current = ""
+    for part in parts:
+        current = f"{current}/{part}"
+        try:
+            sftp.stat(current)
+        except FileNotFoundError:
+            sftp.mkdir(current)
+
+
+@contextmanager
+def create_vps_sftp_client():
+    transport = paramiko.Transport((SSH_HOST, SSH_PORT))
+    try:
+        pkey = load_private_key(SSH_KEY_PATH)
+        transport.connect(username=SSH_USER, pkey=pkey)
+        sftp = paramiko.SFTPClient.from_transport(transport)
+        try:
+            yield sftp
+        finally:
+            sftp.close()
+    finally:
+        transport.close()
 
 
 def parse_args() -> argparse.Namespace:
@@ -216,27 +269,51 @@ def _prepare_image_for_webp(image_bytes: bytes) -> Image.Image:
     return img
 
 
-def make_convert_image(slug: str, post_images_dir: Path, first_public_url: list[str]):
-    post_images_dir.mkdir(parents=True, exist_ok=True)
+def make_convert_image(
+    slug: str,
+    post_images_dir: Optional[Path],
+    first_public_url: list[str],
+    remote_sftp=None,
+    write_images: bool = True,
+):
+    remote_post_dir = posixpath.join(VPS_BLOG_MEDIA_ROOT, slug) if remote_sftp else None
+    if write_images:
+        if remote_sftp is not None:
+            sftp_mkdir_p(remote_sftp, remote_post_dir)
+        elif post_images_dir is not None:
+            post_images_dir.mkdir(parents=True, exist_ok=True)
 
     @img_element
     def convert_image(image) -> dict:
+        def save_bytes(filename: str, payload: bytes) -> None:
+            if not write_images:
+                return
+            if remote_sftp is not None:
+                remote_path = posixpath.join(remote_post_dir, filename)
+                with remote_sftp.file(remote_path, "wb") as remote_file:
+                    remote_file.write(payload)
+                    remote_file.flush()
+                return
+            if post_images_dir is None:
+                raise RuntimeError("Local image directory is not configured")
+            (post_images_dir / filename).write_bytes(payload)
+
         with image.open() as f:
             raw = f.read()
         try:
             img = _prepare_image_for_webp(raw)
         except OSError:
             filename = f"{uuid.uuid4().hex}.bin"
-            filepath = post_images_dir / filename
-            filepath.write_bytes(raw)
+            save_bytes(filename, raw)
             public_path = f"{BLOG_MEDIA_URL_PREFIX}/{slug}/{filename}"
             if not first_public_url:
                 first_public_url.append(public_path)
             return {"src": public_path}
 
         filename = f"{uuid.uuid4().hex}.webp"
-        filepath = post_images_dir / filename
-        img.save(filepath, format="WEBP", quality=WEBP_QUALITY)
+        out = io.BytesIO()
+        img.save(out, format="WEBP", quality=WEBP_QUALITY)
+        save_bytes(filename, out.getvalue())
         public_path = f"{BLOG_MEDIA_URL_PREFIX}/{slug}/{filename}"
         if not first_public_url:
             first_public_url.append(public_path)
@@ -245,16 +322,28 @@ def make_convert_image(slug: str, post_images_dir: Path, first_public_url: list[
     return convert_image  # already wrapped by @img_element
 
 
-def parse_docx_to_markdown(file_path: Path, slug: str, data_dir: Path) -> tuple[str, Optional[str]]:
+def parse_docx_to_markdown(
+    file_path: Path,
+    slug: str,
+    data_dir: Path,
+    remote_sftp=None,
+    write_images: bool = True,
+) -> tuple[str, Optional[str]]:
     if file_path.suffix.lower() == ".doc":
         raise ValueError(
             "Old .doc format is not supported. Convert the file to .docx first."
         )
 
     blog_media_root = data_dir / "blog_media"
-    post_dir = blog_media_root / slug
+    post_dir = None if remote_sftp else (blog_media_root / slug)
     first_url: list[str] = []
-    convert_image_fn = make_convert_image(slug, post_dir, first_url)
+    convert_image_fn = make_convert_image(
+        slug=slug,
+        post_images_dir=post_dir,
+        first_public_url=first_url,
+        remote_sftp=remote_sftp,
+        write_images=write_images,
+    )
 
     with open(file_path, "rb") as docx_file:
         result = mammoth.convert_to_markdown(
@@ -273,10 +362,21 @@ def parse_docx_to_markdown(file_path: Path, slug: str, data_dir: Path) -> tuple[
     return markdown, cover
 
 
-def parse_docx_file(file_path: Path, data_dir: Path) -> dict:
+def parse_docx_file(
+    file_path: Path,
+    data_dir: Path,
+    remote_sftp=None,
+    write_images: bool = True,
+) -> dict:
     slug = generate_slug(file_path.name)
     try:
-        markdown, cover_image_url = parse_docx_to_markdown(file_path, slug, data_dir)
+        markdown, cover_image_url = parse_docx_to_markdown(
+            file_path,
+            slug,
+            data_dir,
+            remote_sftp=remote_sftp,
+            write_images=write_images,
+        )
     except Exception as e:
         raise ValueError(f"Failed to convert document to Markdown: {e}") from e
 
@@ -426,7 +526,7 @@ def main():
             and settings.POSTGRES_SERVER not in ("localhost", "127.0.0.1")
         )
 
-    def process_files(engine):
+    def process_files(engine, remote_sftp=None, write_images: bool = True):
         try:
             test_conn = engine.connect()
             test_conn.close()
@@ -453,7 +553,11 @@ def main():
                             from sqlalchemy import create_engine
 
                             tunnel_engine = create_engine(tunnel_uri)
-                            return process_files(tunnel_engine)
+                            return process_files(
+                                tunnel_engine,
+                                remote_sftp=remote_sftp,
+                                write_images=write_images,
+                            )
                     except Exception as tunnel_error:
                         print(f"  ✗ SSH tunnel failed: {tunnel_error}")
                         sys.exit(1)
@@ -492,7 +596,12 @@ def main():
                             print("    Use --force to re-process")
                             continue
 
-                    post_data = parse_docx_file(doc_file, data_dir)
+                    post_data = parse_docx_file(
+                        doc_file,
+                        data_dir,
+                        remote_sftp=remote_sftp,
+                        write_images=write_images,
+                    )
                     if post_data["slug"] != slug:
                         print(f"  ⚠ Slug mismatch, using: {post_data['slug']}")
 
@@ -515,7 +624,7 @@ def main():
                 f":{settings.POSTGRES_PORT}", ":5433"
             ).replace(settings.POSTGRES_SERVER, "127.0.0.1")
             tunnel_engine = create_engine(tunnel_uri)
-            process_files(tunnel_engine)
+            process_files(tunnel_engine, write_images=not args.dry_run)
     else:
         print("Using direct database connection...")
         if not args.production:
@@ -526,7 +635,23 @@ def main():
             print(f"   Environment: {settings.ENVIRONMENT}")
         from app.core.db import engine
 
-        process_files(engine)
+        if args.production and not args.dry_run:
+            print(f"   Media upload target (VPS): {VPS_BLOG_MEDIA_ROOT}")
+            try:
+                with create_vps_sftp_client() as remote_sftp:
+                    print("   ✓ SFTP connected")
+                    process_files(
+                        engine,
+                        remote_sftp=remote_sftp,
+                        write_images=True,
+                    )
+            except Exception as e:
+                print(f"✗ Failed to initialize SFTP upload for images: {e}")
+                sys.exit(1)
+        else:
+            if args.production and args.dry_run:
+                print("   Dry-run mode: image upload to VPS is disabled")
+            process_files(engine, write_images=not args.dry_run)
 
     print("\n✓ Import completed!")
 
