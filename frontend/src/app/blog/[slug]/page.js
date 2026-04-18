@@ -125,11 +125,7 @@ export default async function BlogPostPage({ params }) {
                   img: ({ src, alt, ...rest }) => (
                     <img
                       {...rest}
-                      src={
-                        typeof src === "string" && src.startsWith("/")
-                          ? `${backendBase}${src}`
-                          : src
-                      }
+                      src={src}
                       alt={alt ?? ""}
                     />
                   ),

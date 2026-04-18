@@ -52,6 +52,25 @@ def _parse_args_early() -> argparse.Namespace:
 _early_args = _parse_args_early()
 if _early_args.production:
     os.environ["ENVIRONMENT"] = "production"
+    # Align with import_docx_blog_posts.py:
+    # in production mode prefer POSTGRES_URL from top-level .env and
+    # override discrete POSTGRES_* values to avoid accidental localhost usage.
+    from dotenv import load_dotenv
+
+    env_file_path = _backend_dir.parent / ".env"
+    if env_file_path.exists():
+        load_dotenv(env_file_path)
+
+    postgres_url = os.getenv("POSTGRES_URL")
+    if postgres_url:
+        match = re.match(r"postgresql://([^:]+):([^@]+)@([^:]+):(\d+)/(.+)", postgres_url)
+        if match:
+            user, password, host, port, dbname = match.groups()
+            os.environ["POSTGRES_USER"] = user
+            os.environ["POSTGRES_PASSWORD"] = password
+            os.environ["POSTGRES_SERVER"] = host
+            os.environ["POSTGRES_PORT"] = port
+            os.environ["POSTGRES_DB"] = dbname
 
 from app.core.config import settings
 from app.models import BlogPost
