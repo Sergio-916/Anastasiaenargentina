@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Image, Box, Text, Button } from "@chakra-ui/react";
 
-function Card({ img, content, title }) {
+function ReviewCard({ img, content, title }) {
 
   function ReadMoreText({ content, limit = 200 }) {
     const [isShown, setIsShown] = useState(false);
@@ -65,4 +65,4 @@ function Card({ img, content, title }) {
   );
 }
 
-export default Card;
+export default ReviewCard;

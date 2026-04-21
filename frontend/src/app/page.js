@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { useBreakpointValue } from "@chakra-ui/react";
 import NextLink from "next/link";
-import MySwiperComponent from "./components/Carousel";
+import ReviewsCarousel from "./components/ReviewsCarousel/ReviewsCarousel";
 import { SHOW_GROUP_TOURS } from "@/utils/settings";
 
 export default function Home() {
@@ -121,7 +121,7 @@ export default function Home() {
           Отзывы
         </Text>
         <Flex justify="center">
-          <MySwiperComponent />
+          <ReviewsCarousel />
         </Flex>
       </Container>
     </>
