@@ -30,14 +30,29 @@ function ReviewCard({ img, content, title }) {
   return (
     <>
       <Box height="auto" width='280px'>
-        <Image
-          src={img}
-          alt={title}
+        <Box
           position="relative"
           left="120px"
           top="90px"
-          boxSize="160px"
-        />
+          width="160px"
+          height="160px"
+          borderRadius="50%"
+          bgColor="var(--chakra-colors-chakra-border-color)"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          overflow="hidden"
+          border="5px solid var(--chakra-colors-chakra-border-color)"
+          borderColor="gray.300"
+        >
+          <Image
+            src={img}
+            alt={title}
+            boxSize="160px"
+            borderRadius="50%"
+            objectFit="contain"
+          />
+        </Box>
         <Box
           _hover={{
             boxShadow: "2xl",

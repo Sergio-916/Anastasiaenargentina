@@ -9,6 +9,9 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "swiper/css/scrollbar";
 
+// Sort reviews by id in descending order (from max to 1)
+const sortedReviews = [...reviews].sort((a, b) => b.id - a.id);
+
 function ReviewsCarousel() {
   return (
     <Swiper
@@ -43,7 +46,7 @@ function ReviewsCarousel() {
         },
       }}
     >
-      {reviews.map((review, index) => (
+      {sortedReviews.map((review, index) => (
         <SwiperSlide
           key={index}
           style={{ display: "flex", justifyContent: "center" }}
