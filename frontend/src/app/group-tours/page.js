@@ -13,6 +13,9 @@ import NoGroupTours from "@/app/components/NoGroupTours";
 export const metadata = {
   title: "Групповые экскурсии",
   description: "Групповые экскурсии по Буэнос Айресу",
+  alternates: {
+    canonical: "/group-tours",
+  },
 };
 
 export default async function GroupToursPage() {
@@ -64,7 +67,7 @@ const filteredTours = scheduledTours.filter((tour) => {
 
   return (
     <Container maxW="container.lg" minH={["none", "none", "75vh"]}>
-      <Heading size="lg" m={4}>
+      <Heading as="h1" size="lg" m={4}>
         Расписание экскурсий на {currentMonthName} 
         { nextMonthName ? ` и ${nextMonthName}` : ""}
       </Heading>

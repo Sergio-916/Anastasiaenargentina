@@ -1,6 +1,12 @@
 # *
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /auth
+Disallow: /auth/*
+Disallow: /login
+Disallow: /reset-password
+Disallow: /api
 
 # Host
 Host: https://anastasiashimuk.com

@@ -57,17 +57,40 @@ export const generateStaticParams = async () => {
 export async function generateMetadata({ params }) {
   const { slug } = params;
   const post = await fetchBlogPost(slug);
+  const encodedSlug = encodeURIComponent(slug);
+  const canonicalPath = `/blog/${encodedSlug}`;
 
   if (!post) {
     return {
       title: "Пост не найден - Блог Анастасии Шимук",
       description: "Запрошенный пост не существует.",
+      alternates: {
+        canonical: canonicalPath,
+      },
+      robots: {
+        index: false,
+        follow: false,
+      },
     };
   }
 
   return {
     title: `${post.title} - Блог Анастасии Шимук`,
     description: post.description || post.title,
+    alternates: {
+      canonical: canonicalPath,
+    },
+    openGraph: {
+      title: `${post.title} - Блог Анастасии Шимук`,
+      description: post.description || post.title,
+      url: canonicalPath,
+      type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${post.title} - Блог Анастасии Шимук`,
+      description: post.description || post.title,
+    },
   };
 }
 
@@ -87,7 +110,7 @@ export default async function BlogPostPage({ params }) {
         <article>
           <Box px={[0, 6, 10, 20]} pt={5} pb={15}>
             {post.title && (
-              <Heading as="h2" size="lg" mb={4}>
+              <Heading as="h1" size="lg" mb={4}>
                 {post.title}
               </Heading>
             )}

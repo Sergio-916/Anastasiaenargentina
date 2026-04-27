@@ -80,6 +80,7 @@ export default function Home() {
             pr={{ base: 25 }}
           >
             <Heading
+              as="h1"
               fontSize={["2xl", "3xl", "4xl", "5xl"]}
               lineHeight="shorter"
             >

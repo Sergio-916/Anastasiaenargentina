@@ -1,4 +1,5 @@
 import { getBackendUrl } from "@/utils/settings";
+import { notFound } from "next/navigation";
 import {
   Box,
   Heading,
@@ -18,6 +19,9 @@ async function fetchTour(slug, date_id) {
     cache: 'no-store',
   });
   if (!res.ok) {
+    if (res.status === 404) {
+      return null;
+    }
     const body = await res.text().catch(() => "");
     throw new Error(`fetchTour failed: ${res.status} ${body.slice(0,200)}`);
   }
@@ -29,17 +33,34 @@ async function fetchTour(slug, date_id) {
 export async function generateMetadata({ params }) {
   const { slug, date_id } = params;
   const tour = await fetchTour(slug, date_id);
+  const canonicalPath = `/group-tours/${encodeURIComponent(slug)}/${encodeURIComponent(date_id)}`;
 
   if (!tour) {
     return {
       title: "Тур не найден",
       description: "Запрошенный тур не существует.",
+      alternates: {
+        canonical: canonicalPath,
+      },
+      robots: {
+        index: false,
+        follow: false,
+      },
     };
   }
 
   return {
     title: tour.name,
     description: tour.description,
+    alternates: {
+      canonical: canonicalPath,
+    },
+    openGraph: {
+      title: tour.name,
+      description: tour.description,
+      url: canonicalPath,
+      type: "website",
+    },
   };
 }
 
@@ -49,11 +70,7 @@ export default async function TourPage({ params }) {
   const tour = await fetchTour(slug, date_id);
 
   if (!tour) {
-    return (
-      <Container maxW="container.lg" mt={4}>
-        <Text>Тур не найден</Text>
-      </Container>
-    );
+    notFound();
   }
 
   const formatDate = (dateStr) => {
@@ -76,7 +93,7 @@ export default async function TourPage({ params }) {
       <Box>
         <SimpleGrid columns={[1, null, 2]} spacing={4}>
           <VStack align="start">
-            <Heading size="lg">{tour.name}</Heading>
+            <Heading as="h1" size="lg">{tour.name}</Heading>
             <Text>⏱ Длительность: {formatHours(tour.duration)}</Text>
             {tour.max_capacity && (
               <Text>👥 Максимум: {tour.max_capacity} человек</Text>

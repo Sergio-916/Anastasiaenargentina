@@ -46,3 +46,8 @@ src/generated/prisma
 # backup
 backup/
 
+graphify-out/
+
+.opencode/
+
+AGENTS.md

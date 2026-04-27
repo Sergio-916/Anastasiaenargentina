@@ -13,6 +13,9 @@ export const metadata = {
   metadataBase: new URL("https://anastasiashimuk.com/"),
   title: "Анастасия Шимук - Гид в Аргентине",
   description: "Туры по Буэнос Айресу и Аргентине",
+  alternates: {
+    canonical: "/",
+  },
 
   openGraph: {
     title: "Анастасия Шимук - Гид в Аргентине",
@@ -21,7 +24,7 @@ export const metadata = {
     type: "website",
     images: [
       {
-        url: "https://anastasiashimuk.com/opengraph/Dios.png",
+        url: "https://anastasiashimuk.com/opengraph/Dios.jpg",
         width: 1000,
         height: 750,
         alt: "Dios-Diego-Maradonna",
@@ -32,7 +35,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "Анастасия Шимук - Гид в Аргентине",
     description: "Туры по Буэнос Айресу и Аргентине",
-    images: ["https://anastasiashimuk.com/opengraph/Dios.png"],
+    images: ["https://anastasiashimuk.com/opengraph/Dios.jpg"],
   },
 };
 
@@ -50,7 +53,7 @@ export default function RootLayout({ children }) {
       "name": "Анастасия Шимук",
       "description": "Гид по Буэнос Айресу и Аргентине",
       "url": "https://anastasiashimuk.com/",
-      "image": "https://anastasiashimuk.com/opengraph/Dios.png"
+      "image": "https://anastasiashimuk.com/opengraph/Dios.jpg"
     }
   `,
           }}
