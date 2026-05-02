@@ -1,6 +1,5 @@
 import {
   Container,
-  Heading,
   Text,
 } from "@chakra-ui/react";
 import { getBackendUrl } from "@/utils/settings";
@@ -51,9 +50,6 @@ export default async function Blog() {
 
   return (
     <Container maxW="container.xl" minH="70vh">
-      <Heading as="h1" m={5} textAlign="center" size={["lg", null, "xl", "xl"]}>
-        Блог Анастасии Шимук
-      </Heading>
       <Text m={5} fontSize={["md", "lg", "xl"]} textAlign="center">
         В блоге я делюсь своим опытом гида в Буэнос Айресе, где я рассказываю много полезной информации о стране и ее культуре.
       </Text>

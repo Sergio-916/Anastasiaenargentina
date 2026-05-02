@@ -135,7 +135,10 @@ export default async function BlogPostPage({ params }) {
                 },
                 "& ul": {
                   ml: 6,
-                  mb: 4
+                  mb: 4,
+                },
+                "& ul li::marker": {
+                  color: "light-dark(black, white)",
                 },
                 "& h1, & h2, & h3": {
                   mt: 6,
