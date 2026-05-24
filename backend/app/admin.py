@@ -18,6 +18,7 @@ from app.models import (
     AdminUser,
     SiteUser,
     BlogPost,
+    Event,
     OAuthAccount,
 )
 
@@ -266,6 +267,34 @@ class OAuthAccountAdmin(ModelView, model=OAuthAccount):
     can_view_details = True
 
 
+class EventAdmin(ModelView, model=Event):
+    """
+    Admin interface for Event model.
+    """
+    column_list = [
+        "id",
+        "title",
+        "slug",
+        "category",
+        "start_date",
+        "city",
+        "is_long_term",
+        "is_visible",
+    ]
+    column_searchable_list = ["title", "slug", "category", "city"]
+    column_sortable_list = ["id", "start_date", "is_visible"]
+    column_default_sort = [("start_date", False)]
+    name = "Event"
+    name_plural = "Events"
+    icon = "fa-solid fa-calendar-days"
+    category = "Content"
+    can_create = True
+    can_edit = True
+    can_delete = True
+    can_view_details = True
+    can_export = True
+
+
 def setup_admin(app, secret_key: str) -> Admin:
     """
     Setup SQLAdmin with authentication and all model views.
@@ -301,6 +330,6 @@ def setup_admin(app, secret_key: str) -> Admin:
     admin.add_view(SiteUserAdmin)
     admin.add_view(OAuthAccountAdmin)
     admin.add_view(BlogPostAdmin)
+    admin.add_view(EventAdmin)
 
     return admin
-

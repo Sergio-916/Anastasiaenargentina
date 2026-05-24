@@ -26,6 +26,7 @@ from app.models import (
     Tour,
     TourDate,
     BlogPost,
+    Event,
     SiteUser,
     User,
     OAuthAccount,

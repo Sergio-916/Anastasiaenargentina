@@ -90,6 +90,51 @@ Alembic revision `121f4837c176` (`ensure_seeded_site_tables`) creates the seeded
 
 ---
 
+### events
+
+| Column              | Type         | Constraints              | Description        |
+|---------------------|--------------|--------------------------|--------------------|
+| id                  | INTEGER      | PRIMARY KEY, AUTO        |                    |
+| slug                | VARCHAR(255) | UNIQUE, NOT NULL         | Stable event URL identifier |
+| title               | VARCHAR(255) | NOT NULL                 |                    |
+| category            | VARCHAR(100) | NOT NULL                 |                    |
+| summary_short       | TEXT         | NOT NULL                 | Card/list summary  |
+| summary_long        | TEXT         | NOT NULL                 | Detail summary     |
+| start_date          | DATE         | NOT NULL                 |                    |
+| end_date            | DATE         | NULL                     |                    |
+| start_time_local    | VARCHAR(20)  | NULL                     | Local event start time |
+| end_time_local      | VARCHAR(20)  | NULL                     | Local event end time |
+| timezone            | VARCHAR(100) | NOT NULL                 |                    |
+| venue_name          | VARCHAR(255) | NULL                     |                    |
+| venue_address       | VARCHAR(255) | NULL                     |                    |
+| neighborhood        | VARCHAR(100) | NULL                     |                    |
+| city                | VARCHAR(100) | NOT NULL                 |                    |
+| country             | VARCHAR(100) | NOT NULL                 |                    |
+| language            | VARCHAR(10)  | NOT NULL                 | Source/content language |
+| price_type          | VARCHAR(50)  | NOT NULL                 | e.g. free, paid, unknown |
+| price_currency      | VARCHAR(10)  | NULL                     |                    |
+| price_value         | NUMERIC      | NULL                     |                    |
+| ticket_url          | TEXT         | NULL                     |                    |
+| official_url        | TEXT         | NULL                     |                    |
+| image_primary_url   | TEXT         | NULL                     |                    |
+| image_alt           | VARCHAR(500) | NULL                     |                    |
+| image_credit        | VARCHAR(255) | NULL                     |                    |
+| tags                | JSON         | NULL                     | List of tags       |
+| source_urls         | JSON         | NULL                     | List of source URLs |
+| status              | VARCHAR(50)  | NOT NULL                 | e.g. scheduled     |
+| source_batch        | VARCHAR(100) | NULL                     | Import/source batch id |
+| source_generated_at | DATETIME     | NULL                     | Source JSON generated_at |
+| is_long_term        | BOOLEAN      | DEFAULT false, NOT NULL  | Marks long-term event records |
+| is_visible          | BOOLEAN      | DEFAULT false, NOT NULL  | Editorial marker for public display |
+| created_at          | DATETIME     | DEFAULT now()            |                    |
+| updated_at          | DATETIME     | DEFAULT now()            |                    |
+
+**Model:** `Event`
+
+Public API returns only `is_visible = true` records and only when `FEATURE_SHOW_EVENTS=true`.
+
+---
+
 ### users (SiteUser)
 
 | Column        | Type         | Constraints       | Description        |
@@ -148,6 +193,9 @@ Alembic revision `121f4837c176` (`ensure_seeded_site_tables`) creates the seeded
 - `tours.slug` — UNIQUE
 - `tour_date.tour_id` — FK index
 - `blog_posts.slug` — UNIQUE
+- `events.slug` — UNIQUE
+- `events.start_date` — INDEX
+- `events.is_visible` — INDEX
 - `users.email` — UNIQUE (SiteUser)
 - `user.email` — UNIQUE, INDEX
 - `oauth_accounts.user_id` — FK index

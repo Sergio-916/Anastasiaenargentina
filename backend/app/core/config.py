@@ -159,6 +159,7 @@ class Settings(BaseSettings):
         return self
     # feature flag registration
     feature_registration_enabled: bool = False
+    FEATURE_SHOW_EVENTS: bool = False
 
 
 settings = Settings()  # type: ignore
