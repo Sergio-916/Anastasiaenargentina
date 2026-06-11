@@ -27,11 +27,17 @@ export default async function GroupToursPage() {
 
   const scheduledTours = await res.json();
 
+  const parseRawDate = (dateStr) => {
+    const [year, month, day] = dateStr.split("-").map(Number);
+    return new Date(year, month - 1, day);
+  };
+
   const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
+    const date = parseRawDate(dateStr);
     return date.toLocaleDateString("ru-RU", {
       day: "numeric",
       month: "long",
+      year: "numeric",
     });
   };
   
@@ -49,15 +55,24 @@ export default async function GroupToursPage() {
   11: "Ноябрь",
   12: "Декабрь",
 };
-  const currentMonth = new Date().getMonth() + 1;
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
   const currentMonthName = monthNames[currentMonth];
-  const nextMonth = currentMonth === 12 ? 1 : currentMonth + 1;
+  const nextMonthDate = new Date(currentYear, currentMonth, 1);
+  const nextYear = nextMonthDate.getFullYear();
+  const nextMonth = nextMonthDate.getMonth() + 1;
   const nextMonthName = monthNames[nextMonth];
 
-const filteredTours = scheduledTours.filter((tour) => {
-    const tourMonth = new Date(tour.raw_date).getMonth() + 1;
+  const filteredTours = scheduledTours.filter((tour) => {
+    const tourDate = parseRawDate(tour.raw_date);
+    const tourMonth = tourDate.getMonth() + 1;
+    const tourYear = tourDate.getFullYear();
 
-    return tourMonth === currentMonth || tourMonth === nextMonth;
+    return (
+      (tourYear === currentYear && tourMonth === currentMonth) ||
+      (tourYear === nextYear && tourMonth === nextMonth)
+    );
   });
 
 
