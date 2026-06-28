@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { Container, Text } from "@chakra-ui/react";
 
 import EventsCarousel from "@/app/components/Events/EventsCarousel";
-import { isActiveEvent } from "@/app/components/Events/eventFilters";
 import { getBackendUrl } from "@/utils/settings";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +21,9 @@ async function fetchEvent(slug) {
 
     if (!res.ok) {
       const body = await res.text().catch(() => "");
-      throw new Error(`Failed to fetch event: ${res.status} ${body.slice(0, 200)}`);
+      throw new Error(
+        `Failed to fetch event: ${res.status} ${body.slice(0, 200)}`,
+      );
     }
 
     return await res.json();
@@ -44,7 +45,9 @@ async function fetchEvents() {
 
     if (!res.ok) {
       const body = await res.text().catch(() => "");
-      throw new Error(`Failed to fetch events: ${res.status} ${body.slice(0, 200)}`);
+      throw new Error(
+        `Failed to fetch events: ${res.status} ${body.slice(0, 200)}`,
+      );
     }
 
     return await res.json();
@@ -59,7 +62,7 @@ export async function generateMetadata({ params }) {
   const event = await fetchEvent(slug);
   const canonicalPath = `/events/${encodeURIComponent(slug)}`;
 
-  if (!event || !isActiveEvent(event)) {
+  if (!event) {
     return {
       title: "Событие не найдено",
       description: "Запрошенное событие не существует.",
@@ -114,14 +117,15 @@ export default async function EventPage({ params }) {
   const events = eventsData.data || [];
   const event = events.find((item) => item.slug === slug);
 
-  if (!event || !isActiveEvent(event)) {
+  if (!event) {
     notFound();
   }
 
   return (
     <Container maxW="container.xl" minH="70vh">
       <Text m={3} fontSize={["md", "lg", "xl"]} textAlign="center">
-        Подборка концертов, выставок, спектаклей и культурных событий в Буэнос-Айресе.
+        Подборка концертов, выставок, спектаклей и культурных событий в
+        Буэнос-Айресе.
       </Text>
       <EventsCarousel events={events} initialSlug={slug} />
     </Container>

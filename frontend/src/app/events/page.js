@@ -41,7 +41,9 @@ async function fetchEvents() {
 
     if (!res.ok) {
       const body = await res.text().catch(() => "");
-      throw new Error(`Failed to fetch events: ${res.status} ${body.slice(0, 200)}`);
+      throw new Error(
+        `Failed to fetch events: ${res.status} ${body.slice(0, 200)}`,
+      );
     }
 
     return await res.json();
@@ -60,9 +62,10 @@ export default async function EventsPage() {
   const events = eventsData.data || [];
 
   return (
-    <Container maxW="container.xl" minH="70vh" >
+    <Container maxW="container.xl" minH="70vh">
       <Text m={3} fontSize={["md", "lg", "xl"]} textAlign="center">
-        Подборка концертов, выставок, спектаклей и культурных событий в Буэнос-Айресе.
+        Подборка концертов, выставок, спектаклей и культурных событий в
+        Буэнос-Айресе.
       </Text>
       <EventsCarousel events={events} />
     </Container>

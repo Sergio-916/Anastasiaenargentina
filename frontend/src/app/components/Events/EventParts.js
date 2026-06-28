@@ -1,4 +1,12 @@
-import { Badge, Flex, HStack, Link, Stack, Text, VStack } from "@chakra-ui/react";
+import {
+  Badge,
+  Flex,
+  HStack,
+  Link,
+  Stack,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
 
 import { formatDateRange, formatPrice, formatTime } from "./eventFormatters";
 
@@ -39,7 +47,9 @@ export function EventMeta({ event, showAddress = false, ...props }) {
       <Text fontWeight="700">📅 {formatDateRange(event)}</Text>
       {eventTime && <Text>🕒 {eventTime}</Text>}
       {event.venue_name && <Text>📍 {event.venue_name}</Text>}
-      {showAddress && event.venue_address && <Text>Адрес: {event.venue_address}</Text>}
+      {showAddress && event.venue_address && (
+        <Text>Адрес: {event.venue_address}</Text>
+      )}
       {event.neighborhood && <Text>🏙️ {event.neighborhood}</Text>}
       <Text>🎟️ {formatPrice(event)}</Text>
     </Stack>

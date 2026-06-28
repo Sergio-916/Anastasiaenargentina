@@ -49,7 +49,7 @@ export default function EventsCarousel({ events, initialSlug }) {
           variant={eventType === EVENT_TYPES.short ? "solid" : "outline"}
           onClick={() => setEventType(EVENT_TYPES.short)}
         >
-          Ближайшие
+          Неделя
         </Button>
         <Button
           colorScheme="teal"
@@ -57,7 +57,7 @@ export default function EventsCarousel({ events, initialSlug }) {
           variant={eventType === EVENT_TYPES.long ? "solid" : "outline"}
           onClick={() => setEventType(EVENT_TYPES.long)}
         >
-          Долгосрочные
+          Длительные
         </Button>
       </Flex>
 
@@ -76,8 +76,12 @@ export default function EventsCarousel({ events, initialSlug }) {
           scrollbar={{ draggable: true }}
           preventClicks={false}
           preventClicksPropagation={false}
-          onSwiper={(swiper) => updateBrowserUrl(filteredEvents[swiper.activeIndex])}
-          onSlideChange={(swiper) => updateBrowserUrl(filteredEvents[swiper.activeIndex])}
+          onSwiper={(swiper) =>
+            updateBrowserUrl(filteredEvents[swiper.activeIndex])
+          }
+          onSlideChange={(swiper) =>
+            updateBrowserUrl(filteredEvents[swiper.activeIndex])
+          }
         >
           {filteredEvents.map((event) => (
             <SwiperSlide key={event.slug} style={{ padding: "0 0 42px" }}>
