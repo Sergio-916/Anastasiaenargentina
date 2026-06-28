@@ -238,12 +238,54 @@ def confirm_production_write(args: argparse.Namespace) -> None:
         sys.exit(0)
 
 
+def _is_host_resolution_error(error: Exception) -> bool:
+    error_msg = str(error).lower()
+    return (
+        "failed to resolve host" in error_msg
+        or "nodename nor servname provided" in error_msg
+    )
+
+
+def _create_tunnel_engine() -> Engine:
+    tunnel_uri = (
+        str(settings.SQLALCHEMY_DATABASE_URI)
+        .replace(f":{settings.POSTGRES_PORT}", ":5433")
+        .replace(f"@{settings.POSTGRES_SERVER}:", "@127.0.0.1:")
+    )
+    return create_engine(tunnel_uri)
+
+
 def process_with_engine(
-    engine: Engine, args: argparse.Namespace, events: list[Event]
+    engine: Engine,
+    args: argparse.Namespace,
+    events: list[Event],
+    *,
+    allow_tunnel_fallback: bool = True,
 ) -> None:
-    with engine.connect() as connection:
-        db_name = connection.execute(text("SELECT current_database()")).scalar_one()
-        print(f"Connected to database: {db_name}")
+    try:
+        with engine.connect() as connection:
+            db_name = connection.execute(text("SELECT current_database()")).scalar_one()
+            print(f"Connected to database: {db_name}")
+    except Exception as error:
+        if not allow_tunnel_fallback or not _is_host_resolution_error(error):
+            raise
+
+        host = settings.POSTGRES_SERVER
+        if host not in ("db", "postgres", "database"):
+            raise
+
+        print(f"\nCannot resolve database host '{host}' from this environment.")
+        print("This host usually works only inside Docker networks.")
+        print("Trying SSH tunnel fallback...")
+        with ssh_tunnel(local_port=5433):
+            print("SSH tunnel active, connecting to production database...")
+            process_with_engine(
+                _create_tunnel_engine(),
+                args,
+                events,
+                allow_tunnel_fallback=False,
+            )
+        return
 
     with Session(engine) as session:
         created, updated, skipped = seed_events(
@@ -284,7 +326,12 @@ def main() -> None:
                 .replace(f":{settings.POSTGRES_PORT}", ":5433")
                 .replace(settings.POSTGRES_SERVER, "127.0.0.1")
             )
-            process_with_engine(create_engine(tunnel_uri), args, events)
+            process_with_engine(
+                create_engine(tunnel_uri),
+                args,
+                events,
+                allow_tunnel_fallback=False,
+            )
         return
 
     from app.core.db import engine

@@ -9,7 +9,18 @@ const DEFAULT_BACKEND_URL = "http://127.0.0.1:8000";
  */
 export function getBackendUrl() {
   if (typeof window !== "undefined") {
-    return process.env.NEXT_PUBLIC_BACKEND_URL || DEFAULT_BACKEND_URL;
+    if (process.env.NEXT_PUBLIC_BACKEND_URL) {
+      return process.env.NEXT_PUBLIC_BACKEND_URL;
+    }
+
+    if (
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1"
+    ) {
+      return DEFAULT_BACKEND_URL;
+    }
+
+    return "";
   }
   return process.env.ENVIRONMENT === "production"
     ? process.env.BACKEND_URL
