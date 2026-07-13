@@ -4,6 +4,7 @@ import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import { useState } from "react";
 import { A11y, Navigation, Pagination, Scrollbar } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
+import { useBreakpointValue } from "@chakra-ui/react";
 
 import EventCard from "./EventCard";
 import {
@@ -39,6 +40,10 @@ export default function EventsCarousel({ events, initialSlug }) {
       `/events/${encodeURIComponent(event.slug)}`,
     );
   };
+  const isMobile = useBreakpointValue({
+    base: true,
+    md: false,
+  });
 
   return (
     <Box mt={4}>
@@ -76,6 +81,7 @@ export default function EventsCarousel({ events, initialSlug }) {
           scrollbar={{ draggable: true }}
           preventClicks={false}
           preventClicksPropagation={false}
+          navigation={isMobile ? false : true}
           onSwiper={(swiper) =>
             updateBrowserUrl(filteredEvents[swiper.activeIndex])
           }
