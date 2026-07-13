@@ -12,13 +12,24 @@ module.exports = {
     "/login",
     "/reset-password",
     "/api/*",
+    "/events/instagram",
+    "/events/instagram/*",
   ],
   robotsTxtOptions: {
     policies: [
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin", "/auth", "/auth/*", "/login", "/reset-password", "/api"],
+        disallow: [
+          "/admin",
+          "/auth",
+          "/auth/*",
+          "/login",
+          "/reset-password",
+          "/api",
+          "/events/instagram",
+          "/events/instagram/*",
+        ],
       },
     ],
   },

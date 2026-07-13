@@ -1,6 +1,16 @@
 from fastapi import APIRouter
 
-from app.api.routes import login, oauth, private, users, utils, tours, contacts, blog_posts
+from app.api.routes import (
+    blog_posts,
+    contacts,
+    events,
+    login,
+    oauth,
+    private,
+    tours,
+    users,
+    utils,
+)
 from app.core.config import settings
 
 api_router = APIRouter()
@@ -11,6 +21,7 @@ api_router.include_router(utils.router)
 api_router.include_router(tours.router, prefix="/tours", tags=["tours"])
 api_router.include_router(contacts.router, prefix="/contacts", tags=["contacts"])
 api_router.include_router(blog_posts.router)
+api_router.include_router(events.router)
 
 
 if settings.ENVIRONMENT == "local":

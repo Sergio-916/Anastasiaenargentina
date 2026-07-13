@@ -45,9 +45,8 @@ src/generated/prisma
 
 # backup
 backup/
-
 graphify-out/
 
 .opencode/
-
+.playwright-mcp/
 AGENTS.md

@@ -2,10 +2,32 @@
 
 import { Box, Flex, Link, Container, Text, Stack } from "@chakra-ui/react";
 import NextLink from "next/link";
-import { menuItems, menuRoutes } from "./Header";
+import { useEffect, useState } from "react";
+import { getBackendUrl } from "@/utils/settings";
+import { menuFeatureFlags, menuItems, menuRoutes } from "./Header";
 import { FaInstagram, FaFacebook, FaWhatsapp, FaYoutube } from "react-icons/fa";
 
 function Footer() {
+  const [features, setFeatures] = useState(null);
+  const visibleMenuItems = menuItems
+    .map((item, index) => ({ item, route: menuRoutes[index], feature: menuFeatureFlags[index] }))
+    .filter((menuItem) => !menuItem.feature || Boolean(features?.[menuItem.feature]));
+
+  useEffect(() => {
+    const fetchFeatureFlag = async () => {
+      try {
+        const response = await fetch(`${getBackendUrl()}/api/v1/utils/features`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        setFeatures(await response.json());
+      } catch (err) {
+        console.error("Feature flag fetch failed:", err);
+      }
+    };
+    fetchFeatureFlag();
+  }, []);
+
   return (
     <>
       <Box w="100%" bgColor="blackAlpha.800" h="auto" color="whiteAlpha.900">
@@ -47,9 +69,9 @@ function Footer() {
                 justify={{ base: "start", md: "end" }}
                 direction={["column", null, "row", "row"]}
               >
-                {menuItems.map((item, index) => (
-                  <Link key={index} as={NextLink} href={menuRoutes[index]}>
-                    {item}
+                {visibleMenuItems.map((item, index) => (
+                  <Link key={index} as={NextLink} href={item.route}>
+                    {item.item}
                   </Link>
                 ))}
               </Flex>

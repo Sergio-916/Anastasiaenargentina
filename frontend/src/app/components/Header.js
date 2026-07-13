@@ -21,16 +21,21 @@ import { getBackendUrl } from "@/utils/settings";
 export const menuItems = [
   "Главная",
   "Экскурсии",
+  "События",
   "Блог",
   "Обо мне",
   "Контакты",
 ];
-export const menuRoutes = ["/", "/tours","/blog", "/about", "/contacts"];
+export const menuRoutes = ["/", "/tours", "/events", "/blog", "/about", "/contacts"];
+export const menuFeatureFlags = [null, null, "show_events", null, null, null];
 function Header() {
   const logo = "/logo.svg";
   const { user, isLoading, logout } = useAuth();
 
   const [features, setFeatures] = useState(null);
+  const visibleMenuItems = menuItems
+    .map((item, index) => ({ item, route: menuRoutes[index], feature: menuFeatureFlags[index] }))
+    .filter((menuItem) => !menuItem.feature || Boolean(features?.[menuItem.feature]));
 
   useEffect(() => {
     const fetchFeatureFlag = async () => {
@@ -41,7 +46,7 @@ function Header() {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const fetchData = await response.json();
-        setFeatures(fetchData.registration_enabled);
+        setFeatures(fetchData);
 
       } catch (err) {
         console.error("Feature flag fetch failed:", err);
@@ -71,7 +76,7 @@ function Header() {
           flexGrow={1}
           gap={2}
         >
-          {menuItems.map((item, index) => (
+          {visibleMenuItems.map((item, index) => (
             <Button
               key={index}
               variant="ghost"
@@ -79,15 +84,15 @@ function Header() {
               _hover={{ bg: "teal.600" }}
               fontSize={['md','lg','xl']}
             >
-              <Link as={NextLink} href={menuRoutes[index]} >
-                {item}
+              <Link as={NextLink} href={item.route} >
+                {item.item}
               </Link>
             </Button>
           ))}
-          <LoginButton isLoading={isLoading} user={user} logout={logout} features={features}/>
+          <LoginButton isLoading={isLoading} user={user} logout={logout} features={features?.registration_enabled}/>
         </Box>
         <Box display={{ base: "flex", lg: "none" }} justifyContent="flex-end" alignItems="center" gap={2}>
-        <LoginButton isLoading={isLoading} user={user} logout={logout} features={features}/>
+        <LoginButton isLoading={isLoading} user={user} logout={logout} features={features?.registration_enabled}/>
           <Menu>
             <MenuButton
               as={IconButton}
@@ -96,14 +101,14 @@ function Header() {
               color="teal.900"
             />
             <MenuList zIndex={1000}>
-              {menuItems.map((item, index) => (
+              {visibleMenuItems.map((item, index) => (
                 <MenuItem key={index}>
-                  <Link as={NextLink} href={menuRoutes[index]} w="full">
-                    {item}
+                  <Link as={NextLink} href={item.route} w="full">
+                    {item.item}
                   </Link>
                 </MenuItem>
               ))}
-              {!isLoading && user && features && (
+              {!isLoading && user && features?.registration_enabled && (
                 <MenuItem onClick={logout}>Выйти</MenuItem>
               )}
             </MenuList>

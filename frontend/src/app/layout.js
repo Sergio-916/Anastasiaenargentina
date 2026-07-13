@@ -1,9 +1,6 @@
 import { Inter } from "next/font/google";
 import { Providers } from "./Providers";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
-import Auto from "./tours/auto/page";
-import { Box } from "@chakra-ui/react";
+import AppShell from "./components/AppShell";
 import Script from "next/script";
 //import "./globals.css";
 
@@ -73,9 +70,7 @@ export default function RootLayout({ children }) {
       </Script>
       <body className={inter.className}>
         <Providers>
-          <Header />
-          <Box minHeight="60vh">{children}</Box>
-          <Footer />
+          <AppShell>{children}</AppShell>
         </Providers>
       </body>
     </html>

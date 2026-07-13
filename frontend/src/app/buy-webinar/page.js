@@ -23,50 +23,12 @@ import {
   ListItem,
   Link,
 } from "@chakra-ui/react";
-import emailjs from "@emailjs/browser";
 
 function WebinarForm({ isOpen, onClose }) {
   const form = useRef();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-
-  const sendEmail = (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
-    setSuccess(false);
-
-    const templateParams = {
-      user_name: form.current.elements.user_name.value,
-      "user_email-or-tel": form.current.elements["user_email-or-tel"].value,
-      "telegram-nick": form.current.elements["telegram-nick"].value,
-    };
-
-    emailjs
-      .send(
-        "service_kw0bprj", // Same service ID as your contact form
-        "template_5j2twpo", // <-- IMPORTANT: Replace with your new EmailJS template ID
-        templateParams,
-        "XcUWmv7bmo-3o80Ah" // Same public key as your contact form
-      )
-      .then(
-        (result) => {
-          console.log(result.text);
-          setSuccess(true);
-          setIsSubmitting(false);
-          form.current.reset();
-          setTimeout(onClose, 3000); // Close modal after 3 seconds
-        },
-        (error) => {
-          console.log(error.text);
-          setError(
-            "Не удалось отправить подтверждение. Пожалуйста, попробуйте снова."
-          );
-          setIsSubmitting(false);
-        }
-      );
-  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -110,40 +72,6 @@ function WebinarForm({ isOpen, onClose }) {
         <ModalCloseButton />
         <ModalBody>
           <Text>*Не забудьте указать свой ник в Telegram</Text>
-          {/* {success ? (
-            <Text color="green.500">
-              Спасибо за покупку! После проверки платежа мы с вами свяжемся.
-            </Text>
-          ) : (
-            <form ref={form} onSubmit={sendEmail}>
-              <FormControl isRequired mb={2}>
-                <FormLabel>Ваше имя</FormLabel>
-                <Input type="text" name="user_name" />
-              </FormControl>
-              <FormControl isRequired mb={2}>
-                <FormLabel>Email/Телефон</FormLabel>
-                <Input type="text" name="user_email-or-tel" />
-              </FormControl>
-              <FormControl isRequired mb={2}>
-                <FormLabel>Ник в Телеграм</FormLabel>
-                <Input type="text" name="telegram-nick" placeholder="" />
-              </FormControl>
-
-              <Button
-                type="submit"
-                colorScheme="teal"
-                isLoading={isSubmitting}
-                width="full"
-              >
-                Отправить
-              </Button>
-              {error && (
-                <Text color="red.500" mt={2}>
-                  {error}
-                </Text>
-              )}
-            </form>
-          )} */}
         </ModalBody>
       </ModalContent>
     </Modal>

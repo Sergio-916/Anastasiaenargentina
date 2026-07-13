@@ -36,5 +36,6 @@ async def health_check() -> bool:
 @router.get("/features")
 def get_features():
     return {
-        "registration_enabled": settings.feature_registration_enabled
+        "registration_enabled": settings.feature_registration_enabled,
+        "show_events": settings.FEATURE_SHOW_EVENTS,
     }
