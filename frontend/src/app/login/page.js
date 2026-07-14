@@ -19,9 +19,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import CreateAccountModal from "@/app/components/CreateAccountModal";
 import ForgotPasswordModal from "@/app/components/ForgotPasswordModal";
 
-
-
-
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,11 +31,8 @@ export default function LoginPage() {
 
   const [showEmalPassModal, setShowEmalPassModal] = useState(false);
 
-
-  
   // Use relative URL - middleware rewrites /api to backend
   const googleLoginUrl = "/api/v1/login/google";
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -61,7 +55,8 @@ export default function LoginPage() {
       });
       router.push("/");
     } catch (err) {
-      const isUserNotFound = err.message === "USER_NOT_FOUND" || err.detail === "USER_NOT_FOUND";
+      const isUserNotFound =
+        err.message === "USER_NOT_FOUND" || err.detail === "USER_NOT_FOUND";
       if (isUserNotFound) {
         setShowCreateAccountModal(true);
       } else {
@@ -115,7 +110,9 @@ export default function LoginPage() {
             Войти через Google
           </Button>
 
-          <Text textAlign="center" color="gray.600">или</Text>
+          <Text textAlign="center" color="gray.600">
+            или
+          </Text>
 
           <Button
             colorScheme="teal"
@@ -124,64 +121,63 @@ export default function LoginPage() {
           >
             Войти через email/пароль
           </Button>
-          
+
           <form onSubmit={handleSubmit}>
             <VStack spacing={4}>
               {showEmalPassModal && (
                 <>
-              <FormControl isRequired>
-                <FormLabel>Email</FormLabel>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="email@example.com"
-                  autoComplete="email"
-                />
-              </FormControl>
-              <FormControl isRequired>
-                <FormLabel>Пароль</FormLabel>
-                <PasswordInput
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                />
-              </FormControl>
-              <Button
-                type="submit"
-                colorScheme="teal"
-                w="full"
-                isLoading={isSubmitting}
-                loadingText="Вход..."
-              >
-                Войти
-              </Button>
-              <Link
-                as="button"
-                fontSize="sm"
-                color="teal.500"
-                _hover={{ textDecoration: "underline" }}
-                onClick={() => setShowForgotPasswordModal(true)}
-              >
-                Забыли пароль?
-              </Link>
-          <Text fontSize="sm" color="gray.500" textAlign="center">
-            Нет аккаунта?{" "}
-            <Link
-              as="button"
-              color="teal.500"
-              _hover={{ textDecoration: "underline" }}
-              onClick={() => setShowCreateAccountModal(true)}
-            >
-              Создать аккаунт
-            </Link>
-          </Text>
-              </>
+                  <FormControl isRequired>
+                    <FormLabel>Email</FormLabel>
+                    <Input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="email@example.com"
+                      autoComplete="email"
+                    />
+                  </FormControl>
+                  <FormControl isRequired>
+                    <FormLabel>Пароль</FormLabel>
+                    <PasswordInput
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      autoComplete="current-password"
+                    />
+                  </FormControl>
+                  <Button
+                    type="submit"
+                    colorScheme="teal"
+                    w="full"
+                    isLoading={isSubmitting}
+                    loadingText="Вход..."
+                  >
+                    Войти
+                  </Button>
+                  <Link
+                    as="button"
+                    fontSize="sm"
+                    color="teal.500"
+                    _hover={{ textDecoration: "underline" }}
+                    onClick={() => setShowForgotPasswordModal(true)}
+                  >
+                    Забыли пароль?
+                  </Link>
+                  <Text fontSize="sm" color="gray.500" textAlign="center">
+                    Нет аккаунта?{" "}
+                    <Link
+                      as="button"
+                      color="teal.500"
+                      _hover={{ textDecoration: "underline" }}
+                      onClick={() => setShowCreateAccountModal(true)}
+                    >
+                      Создать аккаунт
+                    </Link>
+                  </Text>
+                </>
               )}
             </VStack>
           </form>
-
         </VStack>
       </Box>
 

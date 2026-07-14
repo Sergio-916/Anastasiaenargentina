@@ -30,8 +30,6 @@ function SwipeAbout() {
       navigation
       pagination={{ clickable: true }}
       scrollbar={false}
-      // onSwiper={(swiper) => console.log(swiper)}
-      // onSlideChange={() => console.log("slide change")}
     >
       {aboutInfo.info.map((item, index) => (
         <SwiperSlide
@@ -55,7 +53,7 @@ function About() {
       <Heading my={5} textAlign="center">
         Обо мне
       </Heading>
-      <Flex align={"center"} justify={"center"} zIndex={-1}mb={10}>
+      <Flex align={"center"} justify={"center"} zIndex={-1} mb={10}>
         <SwipeAbout />
       </Flex>
     </>

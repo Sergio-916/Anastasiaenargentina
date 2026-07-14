@@ -6,7 +6,7 @@ function MasterClases() {
     <>
       <Container minH="70vh" maxW="container.xl">
         <Heading my={15} textAlign={"center"}>
-         Кроме экскурсий
+          Впечатления
         </Heading>
         <Stack gap={6} justify="center" mb={10}>
           <CardMasterclass />
