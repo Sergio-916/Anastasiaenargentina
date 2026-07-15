@@ -27,7 +27,6 @@ from app.models import (
     TourDate,
     BlogPost,
     Event,
-    SiteUser,
     User,
     OAuthAccount,
 )  # noqa: F401

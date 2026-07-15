@@ -2,7 +2,7 @@
 
 Single source of truth for the database schema. Use this file to validate queries, ORM models, and migrations.
 
-Alembic revision `121f4837c176` (`ensure_seeded_site_tables`) creates the seeded-site tables below when they are missing, so a clean `alembic upgrade head` matches this document (in addition to `user`, `oauth_accounts`, and `blog_posts` from earlier revisions).
+Alembic revision `121f4837c176` (`ensure_seeded_site_tables`) creates the seeded-site tables below when they are missing, so a clean `alembic upgrade head` matches this document (in addition to auth `users`, `oauth_accounts`, and `blog_posts` from earlier revisions). Later migrations remove obsolete seeded tables and rename the original auth `user` table to `users`.
 
 ---
 
@@ -135,24 +135,9 @@ Public API returns only `is_visible = true` records and only when `FEATURE_SHOW_
 
 ---
 
-### users (SiteUser)
-
-| Column        | Type         | Constraints       | Description        |
-|---------------|--------------|-------------------|--------------------|
-| id            | INTEGER      | PRIMARY KEY, AUTO |                    |
-| name          | VARCHAR(255) | NULL              |                    |
-| email         | VARCHAR(255) | UNIQUE, NOT NULL  |                    |
-| password      | VARCHAR(255) | NOT NULL          |                    |
-| emailVerified | DATETIME     | NULL              |                    |
-| image         | VARCHAR      | NULL              |                    |
-
-**Model:** `SiteUser` (mapped to `users` table)
-
----
-
 ## Original App Tables
 
-### user
+### users
 
 | Column          | Type         | Constraints       | Description        |
 |-----------------|--------------|-------------------|--------------------|
@@ -174,7 +159,7 @@ Public API returns only `is_visible = true` records and only when `FEATURE_SHOW_
 | Column          | Type         | Constraints       | Description        |
 |-----------------|--------------|-------------------|--------------------|
 | id              | UUID         | PRIMARY KEY       |                    |
-| user_id         | UUID         | FK → user.id      | NOT NULL           |
+| user_id         | UUID         | FK → users.id     | NOT NULL           |
 | provider        | VARCHAR(50)  | NOT NULL          | e.g. "google"      |
 | provider_user_id| VARCHAR(255) | NOT NULL          |                    |
 | access_token    | VARCHAR      | NULL              |                    |
@@ -182,7 +167,7 @@ Public API returns only `is_visible = true` records and only when `FEATURE_SHOW_
 | expires_at      | DATETIME     | NULL              |                    |
 
 **Model:** `OAuthAccount`  
-**Relationships:** Many-to-one with `user`
+**Relationships:** Many-to-one with `users`
 
 ---
 
@@ -196,6 +181,5 @@ Public API returns only `is_visible = true` records and only when `FEATURE_SHOW_
 - `events.slug` — UNIQUE
 - `events.start_date` — INDEX
 - `events.is_visible` — INDEX
-- `users.email` — UNIQUE (SiteUser)
-- `user.email` — UNIQUE, INDEX
+- `users.email` — UNIQUE, INDEX
 - `oauth_accounts.user_id` — FK index

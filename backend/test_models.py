@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from app.ssh_util import ssh_tunnel
 from app.core.config import settings
-from app.models import AdminUser, Contact, Tour, TourDate, SiteUser
+from app.models import AdminUser, Contact, Tour, TourDate
 
 # Configuration
 DB_HOST = "127.0.0.1"
@@ -61,10 +61,5 @@ def _test_models():
             if d.tour:
                  print(f"  -> Belongs to Tour: {d.tour.name}")
         
-        print("\n--- Testing Users ---")
-        users = session.exec(select(SiteUser)).all()
-        for user in users:
-            print(f"ID: {user.id}, Email: {user.email}")
-
 if __name__ == "__main__":
     main()

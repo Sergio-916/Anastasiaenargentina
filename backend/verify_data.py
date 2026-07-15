@@ -46,7 +46,7 @@ def _verify_data():
     
     with conn.cursor() as cur:
         print("Checking table counts:")
-        tables = ["admin_users", "contacts", "tours", "tour_date", "users"]
+        tables = ["admin_users", "contacts", "tours", "tour_date"]
         for table in tables:
             try:
                 cur.execute(f'SELECT count(*) FROM "{table}"')

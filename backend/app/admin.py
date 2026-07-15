@@ -16,7 +16,6 @@ from app.models import (
     Tour,
     TourDate,
     AdminUser,
-    SiteUser,
     BlogPost,
     Event,
     OAuthAccount,
@@ -192,24 +191,6 @@ class AdminUserAdmin(ModelView, model=AdminUser):
     can_export = True
 
 
-class SiteUserAdmin(ModelView, model=SiteUser):
-    """
-    Admin interface for SiteUser model.
-    """
-    column_list = [SiteUser.id, SiteUser.name, SiteUser.email, SiteUser.emailVerified]
-    column_searchable_list = [SiteUser.name, SiteUser.email]
-    column_sortable_list = [SiteUser.id, SiteUser.email, SiteUser.emailVerified]
-    column_default_sort = [(SiteUser.id, True)]
-    name = "Site User"
-    name_plural = "Site Users"
-    icon = "fa-solid fa-users"
-    category = "Accounts"
-    can_create = True
-    can_edit = True
-    can_delete = True
-    can_view_details = True
-    can_export = True
-
 class BlogPostAdmin(ModelView, model=BlogPost):
     """
     Admin interface for BlogPost model.
@@ -327,7 +308,6 @@ def setup_admin(app, secret_key: str) -> Admin:
     admin.add_view(TourAdmin)
     admin.add_view(TourDateAdmin)
     admin.add_view(AdminUserAdmin)
-    admin.add_view(SiteUserAdmin)
     admin.add_view(OAuthAccountAdmin)
     admin.add_view(BlogPostAdmin)
     admin.add_view(EventAdmin)
