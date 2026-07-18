@@ -19,6 +19,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import CreateAccountModal from "@/app/components/CreateAccountModal";
 import ForgotPasswordModal from "@/app/components/ForgotPasswordModal";
 
+const PASSWORD_RESET_TOKEN_KEY = "password_reset_token";
+
+function getSafeNextPath() {
+  if (typeof window === "undefined") return "/";
+  const next = new URLSearchParams(window.location.search).get("next");
+  if (!next || !next.startsWith("/") || next.startsWith("//")) {
+    return "/";
+  }
+  return next;
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,6 +44,16 @@ export default function LoginPage() {
 
   // Use relative URL - middleware rewrites /api to backend
   const googleLoginUrl = "/api/v1/login/google";
+
+  useEffect(() => {
+    function handleStorageChange(event) {
+      if (event.key !== PASSWORD_RESET_TOKEN_KEY || !event.newValue) return;
+      setShowForgotPasswordModal(true);
+    }
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -53,7 +74,7 @@ export default function LoginPage() {
         status: "success",
         duration: 2000,
       });
-      router.push("/");
+      router.push(getSafeNextPath());
     } catch (err) {
       const isUserNotFound =
         err.message === "USER_NOT_FOUND" || err.detail === "USER_NOT_FOUND";
@@ -73,7 +94,7 @@ export default function LoginPage() {
   };
 
   if (user && !isLoading) {
-    router.replace("/");
+    router.replace(getSafeNextPath());
     return null;
   }
 

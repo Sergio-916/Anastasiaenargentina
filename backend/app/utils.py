@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlencode
 
 import emails  # type: ignore
 import jwt
@@ -217,10 +218,20 @@ def verify_email_verification_token(token: str) -> str | None:
         return None
 
 
-def generate_verify_email_email(email_to: str, token: str) -> EmailData:
+def generate_verify_email_email(
+    email_to: str,
+    token: str,
+    next_path: str | None = None,
+) -> EmailData:
     """Generate email content for email verification."""
     project_name = settings.PROJECT_NAME
-    link = f"{settings.FRONTEND_HOST.rstrip('/')}/auth/verify-email?token={token}"
+    query = {"token": token}
+    if next_path:
+        query["next"] = next_path
+    link = (
+        f"{settings.FRONTEND_HOST.rstrip('/')}/auth/verify-email?"
+        f"{urlencode(query)}"
+    )
     subject = f"{project_name} - Confirm your email"
     html_content = render_email_template(
         template_name="verify_email.html",

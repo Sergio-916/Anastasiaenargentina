@@ -33,6 +33,7 @@ function Header() {
   const { user, isLoading, logout } = useAuth();
 
   const [features, setFeatures] = useState(null);
+  const [loginHref, setLoginHref] = useState("/login");
   const visibleMenuItems = menuItems
     .map((item, index) => ({ item, route: menuRoutes[index], feature: menuFeatureFlags[index] }))
     .filter((menuItem) => !menuItem.feature || Boolean(features?.[menuItem.feature]));
@@ -53,6 +54,15 @@ function Header() {
       }
     };
     fetchFeatureFlag();
+  }, []);
+
+  useEffect(() => {
+    const currentPath = `${window.location.pathname}${window.location.search}`;
+    if (window.location.pathname === "/login") {
+      setLoginHref("/login");
+      return;
+    }
+    setLoginHref(`/login?next=${encodeURIComponent(currentPath)}`);
   }, []);
 
   return (
@@ -89,10 +99,10 @@ function Header() {
               </Link>
             </Button>
           ))}
-          <LoginButton isLoading={isLoading} user={user} logout={logout} features={features?.registration_enabled}/>
+          <LoginButton isLoading={isLoading} user={user} logout={logout} features={features?.registration_enabled} loginHref={loginHref}/>
         </Box>
         <Box display={{ base: "flex", lg: "none" }} justifyContent="flex-end" alignItems="center" gap={2}>
-        <LoginButton isLoading={isLoading} user={user} logout={logout} features={features?.registration_enabled}/>
+        <LoginButton isLoading={isLoading} user={user} logout={logout} features={features?.registration_enabled} loginHref={loginHref}/>
           <Menu>
             <MenuButton
               as={IconButton}

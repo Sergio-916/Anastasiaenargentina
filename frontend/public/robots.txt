@@ -7,6 +7,8 @@ Disallow: /auth/*
 Disallow: /login
 Disallow: /reset-password
 Disallow: /api
+Disallow: /events/instagram
+Disallow: /events/instagram/*
 
 # Host
 Host: https://anastasiashimuk.com

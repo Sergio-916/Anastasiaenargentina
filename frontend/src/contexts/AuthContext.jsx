@@ -69,6 +69,21 @@ export function AuthProvider({ children }) {
     }
   }, [fetchUser]);
 
+  useEffect(() => {
+    function handleStorageChange(event) {
+      if (event.key !== TOKEN_KEY) return;
+      if (event.newValue) {
+        fetchUser(event.newValue);
+      } else {
+        setUser(null);
+        setIsLoading(false);
+      }
+    }
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [fetchUser]);
+
   const setToken = useCallback(
     (token) => {
       setStoredToken(token);
@@ -105,7 +120,7 @@ export function AuthProvider({ children }) {
     return data;
   }, [setToken]);
 
-  const register = useCallback(async (email, password, fullName) => {
+  const register = useCallback(async (email, password, fullName, next) => {
     const res = await fetch("/api/v1/users/signup", {
       method: "POST",
       headers: {
@@ -115,6 +130,7 @@ export function AuthProvider({ children }) {
         email,
         password,
         full_name: fullName || null,
+        next: next || null,
       }),
     });
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import {
+  Box,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -19,6 +20,23 @@ import {
 import PasswordInput from "@/app/components/PasswordInput";
 import { useAuth } from "@/contexts/AuthContext";
 
+function getCurrentPath() {
+  if (typeof window === "undefined") return "/";
+
+  const currentPath = `${window.location.pathname}${window.location.search}`;
+  const next = new URLSearchParams(window.location.search).get("next");
+  if (
+    window.location.pathname === "/login" &&
+    next &&
+    next.startsWith("/") &&
+    !next.startsWith("//")
+  ) {
+    return next;
+  }
+
+  return currentPath;
+}
+
 export default function CreateAccountModal({ isOpen, onClose, initialEmail = "" }) {
   const [email, setEmail] = useState(initialEmail);
 
@@ -30,8 +48,21 @@ export default function CreateAccountModal({ isOpen, onClose, initialEmail = "" 
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register } = useAuth();
+  const [pendingEmail, setPendingEmail] = useState("");
+  const { register, user } = useAuth();
   const toast = useToast();
+
+  useEffect(() => {
+    if (!pendingEmail || !user) return;
+
+    toast({
+      title: "Email подтвержден",
+      description: "Вы вошли в аккаунт",
+      status: "success",
+      duration: 3000,
+    });
+    handleClose();
+  }, [pendingEmail, user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -55,7 +86,8 @@ export default function CreateAccountModal({ isOpen, onClose, initialEmail = "" 
     }
     setIsSubmitting(true);
     try {
-      await register(email, password, fullName || undefined);
+      const registeredEmail = email;
+      await register(email, password, fullName || undefined, getCurrentPath());
       toast({
         title: "Регистрация выполнена",
         description: "Проверьте email для активации аккаунта",
@@ -65,7 +97,7 @@ export default function CreateAccountModal({ isOpen, onClose, initialEmail = "" 
       setEmail("");
       setPassword("");
       setFullName("");
-      onClose();
+      setPendingEmail(registeredEmail);
     } catch (err) {
       toast({
         title: "Ошибка регистрации",
@@ -82,62 +114,98 @@ export default function CreateAccountModal({ isOpen, onClose, initialEmail = "" 
     setEmail("");
     setPassword("");
     setFullName("");
+    setPendingEmail("");
     onClose();
   };
 
+  const isWaitingForConfirmation = Boolean(pendingEmail);
+
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} size="md">
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      size="md"
+      closeOnOverlayClick={false}
+    >
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Создать аккаунт</ModalHeader>
+        <ModalHeader>
+          {isWaitingForConfirmation ? "Проверьте почту" : "Создать аккаунт"}
+        </ModalHeader>
         <ModalCloseButton />
         <ModalBody pb={6}>
-          <form onSubmit={handleSubmit}>
-            <VStack spacing={4}>
-              <FormControl isRequired>
-                <FormLabel>Email</FormLabel>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="email@example.com"
-                  autoComplete="email"
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Имя (необязательно)</FormLabel>
-                <Input
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Ваше имя"
-                  autoComplete="name"
-                />
-              </FormControl>
-              <FormControl isRequired>
-                <FormLabel>Пароль</FormLabel>
-                <PasswordInput
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Минимум 8 символов"
-                  autoComplete="new-password"
-                  minLength={8}
-                />
-              </FormControl>
-              <Button
-                type="submit"
-                colorScheme="teal"
-                w="full"
-                isLoading={isSubmitting}
-                loadingText="Регистрация..."
+          {isWaitingForConfirmation ? (
+            <VStack spacing={5} align="stretch">
+              <Box
+                borderWidth="1px"
+                borderColor="teal.100"
+                borderRadius="lg"
+                bg="teal.50"
+                p={4}
               >
-                Создать аккаунт
+                <Text color="teal.900" fontWeight="600">
+                  Мы отправили письмо на {pendingEmail}.
+                </Text>
+                <Text color="gray.700" mt={2}>
+                  Перейдите в почтовый ящик и подтвердите адрес. После
+                  подтверждения вы автоматически вернетесь на эту страницу.
+                </Text>
+              </Box>
+              <Button colorScheme="teal" onClick={handleClose}>
+                Понятно
               </Button>
             </VStack>
-          </form>
-          <Text fontSize="sm" color="gray.500" mt={4} textAlign="center">
-            После регистрации вы получите письмо со ссылкой для активации аккаунта.
-          </Text>
+          ) : (
+            <>
+              <form onSubmit={handleSubmit}>
+                <VStack spacing={4}>
+                  <FormControl isRequired>
+                    <FormLabel>Email</FormLabel>
+                    <Input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="email@example.com"
+                      autoComplete="email"
+                    />
+                  </FormControl>
+                  <FormControl>
+                    <FormLabel>Имя (необязательно)</FormLabel>
+                    <Input
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Ваше имя"
+                      autoComplete="name"
+                    />
+                  </FormControl>
+                  <FormControl isRequired>
+                    <FormLabel>Пароль</FormLabel>
+                    <PasswordInput
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Минимум 8 символов"
+                      autoComplete="new-password"
+                      minLength={8}
+                    />
+                  </FormControl>
+                  <Button
+                    type="submit"
+                    colorScheme="teal"
+                    w="full"
+                    isLoading={isSubmitting}
+                    loadingText="Регистрация..."
+                  >
+                    Создать аккаунт
+                  </Button>
+                </VStack>
+              </form>
+              <Text fontSize="sm" color="gray.500" mt={4} textAlign="center">
+                После регистрации вы получите письмо со ссылкой для активации
+                аккаунта.
+              </Text>
+            </>
+          )}
         </ModalBody>
       </ModalContent>
     </Modal>

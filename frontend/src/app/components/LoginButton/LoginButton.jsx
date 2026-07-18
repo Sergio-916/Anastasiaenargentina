@@ -8,7 +8,7 @@ MenuItem
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 
-function LoginButton({isLoading, user, logout, features}){
+function LoginButton({isLoading, user, logout, features, loginHref = "/login"}){
 
     return(    
    <>
@@ -32,7 +32,7 @@ function LoginButton({isLoading, user, logout, features}){
             ) : (
               <Button
                 as={NextLink}
-                href="/login"
+                href={loginHref}
                 colorScheme="whiteAlpha"
                 color="white"
                 variant="outline"
@@ -47,4 +47,3 @@ function LoginButton({isLoading, user, logout, features}){
 )}
 
 export default LoginButton
-

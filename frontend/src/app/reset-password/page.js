@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Box,
@@ -14,15 +14,29 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import PasswordInput from "@/app/components/PasswordInput";
+import { getBackendUrl } from "@/utils/settings";
+
+const PASSWORD_RESET_TOKEN_KEY = "password_reset_token";
 
 function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const toast = useToast();
   const token = searchParams.get("token");
+  const hasSharedToken = useRef(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!token || hasSharedToken.current) return;
+
+    hasSharedToken.current = true;
+    localStorage.setItem(PASSWORD_RESET_TOKEN_KEY, token);
+    window.setTimeout(() => {
+      window.close();
+    }, 0);
+  }, [token]);
 
   if (!token) {
     return (
@@ -70,7 +84,7 @@ function ResetPasswordContent() {
     }
     setIsSubmitting(true);
     try {
-      const res = await fetch("/api/v1/reset-password/", {
+      const res = await fetch(`${getBackendUrl()}/api/v1/reset-password/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

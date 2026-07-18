@@ -1,5 +1,6 @@
 import uuid
 from typing import Any
+from urllib.parse import urlsplit
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import delete, func, select
@@ -30,6 +31,17 @@ from app.utils import (
 )
 
 router = APIRouter(prefix="/users", tags=["users"])
+
+
+def get_safe_next_path(next_path: str | None) -> str | None:
+    if not next_path:
+        return None
+    parsed = urlsplit(next_path)
+    if parsed.scheme or parsed.netloc or not next_path.startswith("/"):
+        return None
+    if next_path.startswith("//"):
+        return None
+    return next_path
 
 
 @router.get(
@@ -162,7 +174,11 @@ def register_user(session: SessionDep, user_in: UserRegister) -> Message:
     )
     if settings.emails_enabled:
         token = generate_email_verification_token(email=user.email)
-        email_data = generate_verify_email_email(email_to=user.email, token=token)
+        email_data = generate_verify_email_email(
+            email_to=user.email,
+            token=token,
+            next_path=get_safe_next_path(user_in.next),
+        )
         send_email(
             email_to=user.email,
             subject=email_data.subject,

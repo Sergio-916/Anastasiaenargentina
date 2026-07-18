@@ -4,6 +4,17 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Center, Spinner, Text, VStack, Button } from "@chakra-ui/react";
 import { useAuth } from "@/contexts/AuthContext";
+import { getBackendUrl } from "@/utils/settings";
+
+const VERIFY_TIMEOUT_MS = 15000;
+const CLOSE_FALLBACK_REDIRECT_MS = 1200;
+
+function getSafeNextPath(nextPath) {
+  if (!nextPath || !nextPath.startsWith("/") || nextPath.startsWith("//")) {
+    return "/";
+  }
+  return nextPath;
+}
 
 function VerifyEmailContent() {
   const router = useRouter();
@@ -14,6 +25,7 @@ function VerifyEmailContent() {
   const hasVerified = useRef(false);
 
   const token = searchParams.get("token");
+  const nextPath = getSafeNextPath(searchParams.get("next"));
 
   useEffect(() => {
     if (hasVerified.current) return;
@@ -26,12 +38,18 @@ function VerifyEmailContent() {
     hasVerified.current = true;
 
     async function verify() {
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => {
+        controller.abort();
+      }, VERIFY_TIMEOUT_MS);
+
       try {
-        const res = await fetch("/api/v1/auth/verify-email", {
+        const res = await fetch(`${getBackendUrl()}/api/v1/auth/verify-email`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
+          signal: controller.signal,
           body: JSON.stringify({ token }),
         });
 
@@ -45,14 +63,24 @@ function VerifyEmailContent() {
           setToken(data.access_token);
         }
         setStatus("success");
+        window.setTimeout(() => {
+          router.replace(nextPath);
+        }, CLOSE_FALLBACK_REDIRECT_MS);
+        window.close();
       } catch (err) {
         setStatus("error");
-        setError(err.message || "Invalid or expired verification link");
+        setError(
+          err.name === "AbortError"
+            ? "Не удалось подтвердить email: сервер не ответил. Попробуйте открыть ссылку еще раз."
+            : err.message || "Invalid or expired verification link"
+        );
+      } finally {
+        window.clearTimeout(timeoutId);
       }
     }
 
     verify();
-  }, [token, setToken]);
+  }, [nextPath, router, token, setToken]);
 
   if (status === "loading") {
     return (
@@ -86,11 +114,8 @@ function VerifyEmailContent() {
     <Center h="60vh">
       <VStack spacing={4}>
         <Text fontSize="lg" color="green.600">
-          Email подтверждён! Вы вошли в систему.
+          Email подтвержден. Можно вернуться на вкладку сайта.
         </Text>
-        <Button colorScheme="teal" onClick={() => router.push("/")}>
-          На главную
-        </Button>
       </VStack>
     </Center>
   );
