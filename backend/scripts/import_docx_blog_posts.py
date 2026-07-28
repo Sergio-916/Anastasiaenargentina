@@ -81,7 +81,7 @@ if _early_args.production:
 from app.core.config import settings
 from app.models import BlogPost
 from app.ssh_util import ssh_tunnel
-from app.translit import transliterate
+from app.utils.translit import transliterate
 
 
 def parse_args():
