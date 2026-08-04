@@ -65,6 +65,8 @@ from app.core.config import settings
 from app.models import Event
 from app.ssh_util import ssh_tunnel
 
+SSH_TUNNEL_PORT = 5434
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Seed events from JSON")
@@ -246,10 +248,10 @@ def _is_host_resolution_error(error: Exception) -> bool:
     )
 
 
-def _create_tunnel_engine() -> Engine:
+def _create_tunnel_engine(local_port: int) -> Engine:
     tunnel_uri = (
         str(settings.SQLALCHEMY_DATABASE_URI)
-        .replace(f":{settings.POSTGRES_PORT}", ":5433")
+        .replace(f":{settings.POSTGRES_PORT}", f":{local_port}")
         .replace(f"@{settings.POSTGRES_SERVER}:", "@127.0.0.1:")
     )
     return create_engine(tunnel_uri)
@@ -277,10 +279,10 @@ def process_with_engine(
         print(f"\nCannot resolve database host '{host}' from this environment.")
         print("This host usually works only inside Docker networks.")
         print("Trying SSH tunnel fallback...")
-        with ssh_tunnel(local_port=5433):
+        with ssh_tunnel(local_port=SSH_TUNNEL_PORT):
             print("SSH tunnel active, connecting to production database...")
             process_with_engine(
-                _create_tunnel_engine(),
+                _create_tunnel_engine(SSH_TUNNEL_PORT),
                 args,
                 events,
                 allow_tunnel_fallback=False,
@@ -320,10 +322,10 @@ def main() -> None:
 
     if needs_ssh_tunnel:
         print("Local environment with remote database detected, creating SSH tunnel...")
-        with ssh_tunnel(local_port=5433):
+        with ssh_tunnel(local_port=SSH_TUNNEL_PORT):
             tunnel_uri = (
                 str(settings.SQLALCHEMY_DATABASE_URI)
-                .replace(f":{settings.POSTGRES_PORT}", ":5433")
+                .replace(f":{settings.POSTGRES_PORT}", f":{SSH_TUNNEL_PORT}")
                 .replace(settings.POSTGRES_SERVER, "127.0.0.1")
             )
             process_with_engine(

@@ -26,7 +26,7 @@ export default function EventsInstagramTitle({ startDate, endDate }) {
         position="relative"
         align="flex-end"
         spacing={5}
-        pt={28}
+        pt="calc(12rem + 10vh)"
         pr={16}
       >
         <Text

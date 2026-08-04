@@ -29,15 +29,17 @@ function getShortTermDateRange(events) {
     return null;
   }
 
-  const dates = shortTermEvents.flatMap((event) => [
-    event.start_date,
-    event.end_date || event.start_date,
-  ]);
-
   return {
     startDate: weekStart,
-    endDate: dates.reduce((max, date) => (date > max ? date : max)),
+    endDate: addDays(weekStart, 6),
   };
+}
+
+function addDays(dateString, days) {
+  const date = new Date(`${dateString}T00:00:00`);
+  date.setDate(date.getDate() + days);
+
+  return date.toISOString().slice(0, 10);
 }
 
 function getInstagramWeekStart() {
