@@ -31,6 +31,9 @@ function getSummaryFontSize(summary) {
 }
 
 function getDescriptionLineCount(description) {
+  if (description.length > 380) {
+    return 10;
+  }
   if (description.length > 340) {
     return 8;
   }
@@ -58,11 +61,11 @@ export default function InstagramCard({ event }) {
       display="flex"
       flexDirection="column"
     >
-      <Box bg="teal.600" color="white" px={16} py={7} flexShrink={0}>
+      {/* <Box bg="teal.600" color="white" px={16} py={7} flexShrink={0}>
         <Text fontSize="3xl" fontWeight="700">
           Anastasia en Argentina
         </Text>
-      </Box>
+      </Box>*/}
 
       <Stack
         spacing={isDenseHeader ? 4 : 5}

@@ -1,4 +1,4 @@
-import { Box, Stack, Text } from "@chakra-ui/react";
+import { Box, Center, Stack, Text } from "@chakra-ui/react";
 
 function formatDate(date) {
   return new Intl.DateTimeFormat("ru-RU", {
@@ -9,6 +9,8 @@ function formatDate(date) {
 
 export default function EventsInstagramTitle({ startDate, endDate }) {
   const dateRange = `${formatDate(startDate)} - ${formatDate(endDate)}`;
+
+  const TITLE_TEXT = "Куда сходить\nв Буэнос-Айресе";
 
   return (
     <Box
@@ -40,8 +42,11 @@ export default function EventsInstagramTitle({ startDate, endDate }) {
           lineHeight="shorter"
           fontWeight="900"
           letterSpacing="0"
+          textTransform="uppercase"
+          textAlign="right"
+          whiteSpace="pre-line"
         >
-          КУДА СХОДИТЬ
+          {TITLE_TEXT}
         </Text>
         <Text
           bg="white"
